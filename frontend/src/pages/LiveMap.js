@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
+import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { demoIncidents, demoLiveTraffic } from '../data/trafficDemoData';
 
@@ -32,6 +33,8 @@ const LiveMap = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [searchMarker, setSearchMarker] = useState(null);
   const [mapCenter, setMapCenter] = useState(dhakaCenter);
+  
+  const location = useLocation();
 
   useEffect(() => {
     Promise.allSettled([
@@ -44,6 +47,24 @@ const LiveMap = () => {
       setTraffic(results[2].value?.data || demoLiveTraffic);
     });
   }, []);
+
+  // Listen to navigation state focus (e.g. from Dashboard click)
+  useEffect(() => {
+    if (location.state?.focusCoordinates) {
+      const coords = location.state.focusCoordinates;
+      if (Array.isArray(coords) && coords.length === 2) {
+        // GeoJSON uses [longitude, latitude], standard map center uses [latitude, longitude]
+        const isGeoJSON = coords[0] > 70; // Dhaka longitude is ~90, latitude is ~23
+        const lat = isGeoJSON ? coords[1] : coords[0];
+        const lng = isGeoJSON ? coords[0] : coords[1];
+        setMapCenter([lat, lng]);
+        setSearchMarker({
+          coordinates: [lat, lng],
+          name: "Focused Incident Location"
+        });
+      }
+    }
+  }, [location.state]);
 
   const visibleIncidents = incidents.length ? incidents : demoIncidents;
   const activeVehicles = useMemo(() => vehicles.filter((vehicle) => vehicle.currentLocation?.coordinates?.length === 2), [vehicles]);
