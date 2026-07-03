@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { demoLiveTraffic } from '../data/trafficDemoData';
 
@@ -15,7 +16,7 @@ const Dashboard = () => {
   const [data, setData] = useState(initialState);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadData = () => {
     Promise.allSettled([
       api.get('/summary'),
       api.get('/incidents?limit=6'),
@@ -33,7 +34,30 @@ const Dashboard = () => {
         traffic: results[5].value?.data || demoLiveTraffic
       });
     }).finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
+
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      await api.put(`/incidents/${id}`, { status });
+      loadData();
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
+  };
+
+  const handleDeleteIncident = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this incident report?")) return;
+    try {
+      await api.delete(`/incidents/${id}`);
+      loadData();
+    } catch (err) {
+      console.error("Failed to delete incident:", err);
+    }
+  };
 
   const summary = data.summary || {
     incidents: data.incidents.length,
@@ -123,6 +147,7 @@ const Dashboard = () => {
               <th>Severity</th>
               <th>Status</th>
               <th>Location</th>
+              <th style={{ width: '280px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -141,6 +166,46 @@ const Dashboard = () => {
                   </span>
                 </td>
                 <td>{incident.locationName}</td>
+                <td>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <Link
+                      to="/live-map"
+                      state={{ focusCoordinates: incident.coordinates || incident.location?.coordinates }}
+                      className="badge success"
+                      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
+                    >
+                      Locate
+                    </Link>
+                    {incident.status !== 'Resolved' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(incident._id, 'Resolved')}
+                        className="badge"
+                        style={{ cursor: 'pointer', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)' }}
+                      >
+                        Resolve
+                      </button>
+                    )}
+                    {incident.status === 'Open' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(incident._id, 'Investigating')}
+                        className="badge"
+                        style={{ cursor: 'pointer', background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.2)' }}
+                      >
+                        Investigate
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteIncident(incident._id)}
+                      className="badge danger"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
