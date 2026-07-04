@@ -6,7 +6,7 @@
 ### Project Cover Page
 * **Project Title:** TrafficEase BD - Dhaka Smart City Traffic Command System
 * **Course:** CSE470 - Software Engineering
-* **Academic Semester:** Spring 2026
+* **Academic Semester:** Summer 2026
 * **Group ID / Section:** Group 4 / Section 01
 * **Document Version:** v1.2.0 (Audit Ready)
 
