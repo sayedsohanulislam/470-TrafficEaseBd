@@ -69,6 +69,10 @@ let transit = [
   { _id: 'mock-tr-3', name: 'MRT Line 6 Feeder', mode: 'Metro', origin: 'Uttara North', destination: 'Motijheel', status: 'Active', headwayMinutes: 7, crowdingLevel: 'High' }
 ];
 
+let users = [
+  { _id: 'mock-user-1', name: 'Sayed Sohanul Islam', email: 'sohan@trafficease.com', phone: '01711122233', role: 'Authority', password: '$2a$10$U52k8sH07klyK5d35aXj0u7tA8e8uD3N5H.y1N.F1pL/t.b6x8g2q' } // password123 (hashed)
+];
+
 // Helper to get summaries
 const getSummaryData = () => {
   return {
@@ -88,6 +92,7 @@ module.exports = {
   parking,
   signals,
   transit,
+  users,
   getSummaryData,
   buildLiveTrafficState
 };
