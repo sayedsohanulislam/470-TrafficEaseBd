@@ -17,7 +17,11 @@ const Navbar = () => {
     <header className="navbar">
       <div className="nav-inner">
         <Link className="brand" to="/" onClick={() => setMenuOpen(false)}>
-          <span className="brand-mark">TE</span>
+          <span className="brand-mark" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
           <span>TrafficEase BD</span>
         </Link>
 

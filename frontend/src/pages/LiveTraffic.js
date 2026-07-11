@@ -296,7 +296,7 @@ const LiveTraffic = () => {
                 width: '24px',
                 height: '24px',
                 borderRadius: '50%',
-                background: simSignalPhase.includes('Green') ? '#10b981' : simSignalPhase.includes('Call') ? '#fbbf24' : '#ef4444',
+                background: simSignalPhase.includes('Green') ? '#2fbf71' : simSignalPhase.includes('Call') ? '#ffb020' : '#f0525b',
                 boxShadow: '0 0 10px currentColor'
               }} />
               <div>
@@ -666,7 +666,7 @@ const LiveTraffic = () => {
                     height: '40px',
                     borderRadius: '6px',
                     border: '1px solid var(--line)',
-                    background: slot ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                    background: slot ? 'rgba(240, 82, 91, 0.2)' : 'rgba(47, 191, 113, 0.2)',
                     color: slot ? 'var(--danger)' : 'var(--primary)',
                     cursor: 'pointer',
                     fontWeight: 'bold',
@@ -1087,8 +1087,8 @@ const LiveTraffic = () => {
             <svg className="chart-svg" viewBox="0 0 300 80" style={{ height: '70px', background: 'rgba(255,255,255,0.01)', borderRadius: '6px', border: '1px solid var(--line)' }}>
               <defs>
                 <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.4"></stop>
-                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.01"></stop>
+                  <stop offset="0%" stopColor="#2fbf71" stopOpacity="0.4"></stop>
+                  <stop offset="100%" stopColor="#2fbf71" stopOpacity="0.01"></stop>
                 </linearGradient>
               </defs>
               <line x1="0" y1="20" x2="300" y2="20" style={{ stroke: 'rgba(255,255,255,0.04)', strokeWidth: 1 }} />

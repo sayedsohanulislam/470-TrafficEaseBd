@@ -7,10 +7,10 @@ import { demoIncidents, demoLiveTraffic } from '../data/trafficDemoData';
 const dhakaCenter = [23.8103, 90.4125];
 
 const severityColor = {
-  Low: '#10b981',
-  Medium: '#fbbf24',
+  Low: '#2fbf71',
+  Medium: '#ffb020',
   High: '#f43f5e',
-  Critical: '#ef4444'
+  Critical: '#f0525b'
 };
 
 // Controller component to programmatically pan/zoom map
@@ -179,17 +179,17 @@ const LiveMap = () => {
             {/* Mirpur to Farmgate Corridor (Severe) */}
             <Polyline
               positions={[[23.8067, 90.3686], [23.7807, 90.3792], [23.7561, 90.3897]]}
-              pathOptions={{ color: '#ef4444', weight: 6, opacity: 0.85 }}
+              pathOptions={{ color: '#f0525b', weight: 6, opacity: 0.85 }}
             />
             {/* Gulshan to Banani Corridor (Moderate) */}
             <Polyline
               positions={[[23.7937, 90.4003], [23.7801, 90.4072], [23.7619, 90.3895]]}
-              pathOptions={{ color: '#fbbf24', weight: 6, opacity: 0.85 }}
+              pathOptions={{ color: '#ffb020', weight: 6, opacity: 0.85 }}
             />
             {/* Uttara to Airport Corridor (Low) */}
             <Polyline
               positions={[[23.8759, 90.3795], [23.8516, 90.4048], [23.8103, 90.4125]]}
-              pathOptions={{ color: '#10b981', weight: 6, opacity: 0.85 }}
+              pathOptions={{ color: '#2fbf71', weight: 6, opacity: 0.85 }}
             />
 
             {/* Custom Search Marker */}
@@ -221,8 +221,8 @@ const LiveMap = () => {
                   center={[lat, lng]}
                   radius={12}
                   pathOptions={{
-                    color: severityColor[incident.severity] || '#10b981',
-                    fillColor: severityColor[incident.severity] || '#10b981',
+                    color: severityColor[incident.severity] || '#2fbf71',
+                    fillColor: severityColor[incident.severity] || '#2fbf71',
                     fillOpacity: 0.65,
                     weight: 2
                   }}

@@ -181,7 +181,7 @@ const Dashboard = () => {
                         type="button"
                         onClick={() => handleUpdateStatus(incident._id, 'Resolved')}
                         className="badge"
-                        style={{ cursor: 'pointer', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)' }}
+                        style={{ cursor: 'pointer', background: 'rgba(47, 191, 113, 0.1)', color: '#2fbf71', border: '1px solid rgba(47, 191, 113, 0.2)' }}
                       >
                         Resolve
                       </button>
@@ -191,7 +191,7 @@ const Dashboard = () => {
                         type="button"
                         onClick={() => handleUpdateStatus(incident._id, 'Investigating')}
                         className="badge"
-                        style={{ cursor: 'pointer', background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.2)' }}
+                        style={{ cursor: 'pointer', background: 'rgba(255, 176, 32, 0.1)', color: '#ffb020', border: '1px solid rgba(255, 176, 32, 0.2)' }}
                       >
                         Investigate
                       </button>

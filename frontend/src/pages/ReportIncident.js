@@ -26,7 +26,7 @@ const LocationPicker = ({ onLocationSelected, position }) => {
     <CircleMarker
       center={position}
       radius={10}
-      pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.8, weight: 2 }}
+      pathOptions={{ color: '#f0525b', fillColor: '#f0525b', fillOpacity: 0.8, weight: 2 }}
     />
   ) : null;
 };
