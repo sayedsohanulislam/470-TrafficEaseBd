@@ -13,7 +13,7 @@ const severityColor = {
   Critical: '#f0525b'
 };
 
-// Rain shelters list
+// Rain shelters list (Feature 3)
 const rainShelters = [
   { name: "Mirpur 10 Metro Station Underpass", coords: [23.8069, 90.3687], capacity: 250 },
   { name: "Farmgate Metro Station Canopy", coords: [23.7562, 90.3896], capacity: 300 },
@@ -21,7 +21,33 @@ const rainShelters = [
   { name: "Jamuna Future Park Plaza Shelter", coords: [23.8135, 90.4242], capacity: 400 }
 ];
 
-// Bus track coordinates
+// Volcanizer emergency tire repair locations (Feature 13)
+const volcanizers = [
+  { name: "Siddique Tyre Works (Mirpur 10)", coords: [23.8055, 90.3695], contact: "01712-345678" },
+  { name: "Karwan Bazar Volcanizing & Alignment", coords: [23.7510, 90.3920], contact: "01815-987654" },
+  { name: "Banani Filling Station Vulcanizer", coords: [23.7940, 90.4020], contact: "01911-554433" }
+];
+
+// Ride-sharing bike stands / pick hotzones (Feature 16)
+const rideStands = [
+  { name: "Farmgate Ananda Cinema Stand", coords: [23.7565, 90.3885], activeBikes: 24 },
+  { name: "Banani Kakoli Crossing Hub", coords: [23.7995, 90.4035], activeBikes: 45 },
+  { name: "Shahbagh Intersection Stand", coords: [23.7385, 90.3965], activeBikes: 18 }
+];
+
+// Pothole water-puddle camouflage warnings (Feature 20)
+const camouflagedPuddles = [
+  { name: "Mirpur 1 Hidden Pothole Puddle", coords: [23.8010, 90.3550] },
+  { name: "Kazipara Outer Lane Water Puddle", coords: [23.7950, 90.3730] }
+];
+
+// Pedestrian streetlight blackout zones (Feature 18)
+const blackoutStreets = [
+  { coords: [[23.7970, 90.3720], [23.7950, 90.3700]], name: "Kazipara Lane 4 (Unlit Alleys)" },
+  { coords: [[23.7630, 90.3950], [23.7610, 90.3980]], name: "Tejgaon Industrial Secondary Lane" }
+];
+
+// Bus track coordinates (Feature 2)
 const busTrackCoords = [
   [23.8759, 90.3795], // Uttara
   [23.8516, 90.4048], // Airport
@@ -31,7 +57,7 @@ const busTrackCoords = [
   [23.7250, 90.4000]  // Motijheel
 ];
 
-// Ambulance track coordinates
+// Ambulance track coordinates (Feature 8)
 const ambulanceTrackCoords = [
   [23.8067, 90.3686], // Mirpur
   [23.7807, 90.3792], // Kazipara
@@ -134,33 +160,47 @@ const LiveMap = () => {
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routeError, setRouteError] = useState('');
 
-  // 10 Smart Hub States
+  // --- 20 Smart Hub States ---
+  // Category 1: Commuters & Tolls
   const [cngDistInput, setCngDistInput] = useState('');
-  const [showRainOverlay, setShowRainOverlay] = useState(false);
+  const [showVolcanizers, setShowVolcanizers] = useState(false);
+  
+  // Category 2: Transit Deck
   const [selectedBusRoute, setSelectedBusRoute] = useState('Raida');
   const [isBusTracking, setIsBusTracking] = useState(false);
   const [busIndex, setBusIndex] = useState(0);
   const [mrtStations, setMrtStations] = useState([
-    { name: "Uttara North Station", waitMin: 5 },
-    { name: "Mirpur 10 Station", waitMin: 18 },
-    { name: "Farmgate Station", waitMin: 25 },
-    { name: "Motijheel Station", waitMin: 12 }
+    { name: "Uttara North Station", waitMin: 5, cardStock: "100% Stocked" },
+    { name: "Mirpur 10 Station", waitMin: 18, cardStock: "Out of Cards - Counter Only" },
+    { name: "Farmgate Station", waitMin: 25, cardStock: "20% Cards Left" },
+    { name: "Motijheel Station", waitMin: 12, cardStock: "100% Stocked" }
   ]);
+  const [terminalQueues, setTerminalQueues] = useState({
+    gabtoli: 35,
+    sayedabad: 15,
+    mohakhali: 20
+  });
+
+  // Category 3: Monsoon & Hydrology
+  const [showRainOverlay, setShowRainOverlay] = useState(false);
+  const [isSlipperyWeather, setIsSlipperyWeather] = useState(false);
+  const [showCamouflagedPuddles, setShowCamouflagedPuddles] = useState(false);
+  const [showCngEngineWarning, setShowCngEngineWarning] = useState(false);
+
+  // Category 4: Urban Safety & Reports
   const [reportedHazards, setReportedHazards] = useState([
     { coords: [23.7925, 90.4020], severity: "Deep Pothole" },
     { coords: [23.7380, 90.3850], severity: "Road Surface Scratch" }
   ]);
   const [tempHazardSeverity, setTempHazardSeverity] = useState('Deep Pothole');
-  const [isSlipperyWeather, setIsSlipperyWeather] = useState(false);
   const [weeklyBazaarActive, setWeeklyBazaarActive] = useState(false);
   const [isAmbulanceSimActive, setIsAmbulanceSimActive] = useState(false);
   const [ambulanceIndex, setAmbulanceIndex] = useState(0);
   const [useAqiRouting, setUseAqiRouting] = useState(false);
-  const [tollDelays, setTollDelays] = useState({
-    padma: 8,
-    hanif: 22,
-    airport: 15
-  });
+  const [showRideStands, setShowRideStands] = useState(false);
+  const [showBlackoutZones, setShowBlackoutZones] = useState(false);
+  const [gasStationStatus, setGasStationStatus] = useState("High Pressure"); // CNG Pressure state
+  const [overbridgeCondition, setOverbridgeCondition] = useState({ name: "Farmgate Overbridge", state: "Blocked by Hawkers" });
 
   const location = useLocation();
 
@@ -193,7 +233,7 @@ const LiveMap = () => {
     }
   }, [location.state]);
 
-  // Simulation loop for Bus and Ambulance markers
+  // Simulation loops
   useEffect(() => {
     const timer = setInterval(() => {
       if (isBusTracking) {
@@ -312,15 +352,16 @@ const LiveMap = () => {
     setRoutes([]);
     setRickshawWarning('');
     setActiveDetours([]);
+    setShowCngEngineWarning(false);
 
     try {
       const [originLat, originLng] = originCoords;
       const [destLat, destLng] = destCoords;
       
-      const vipTarget = [23.7684, 90.3789]; // Bijoy Sarani intersection
-      const floodTarget = [23.7561, 90.3897]; // Farmgate intersection
-      const airportTarget = [23.8300, 90.4100]; // Airport highway segment
-      const bazaarTarget = [23.7505, 90.3930]; // Karwan Bazar weekly bazaar area
+      const vipTarget = [23.7684, 90.3789];
+      const floodTarget = [23.7561, 90.3897];
+      const airportTarget = [23.8300, 90.4100];
+      const bazaarTarget = [23.7505, 90.3930];
 
       let waypoints = [[originLat, originLng]];
       let detoursList = [];
@@ -328,32 +369,37 @@ const LiveMap = () => {
 
       // 1. Check VIP blockade detour
       if (vipProtocolActive && linePassesNearPoint([originLat, originLng], [destLat, destLng], vipTarget, 0.015)) {
-        waypoints.push([23.7807, 90.3792]); // Rokeya Sarani bypass
-        detoursList.push("VIP Protocol Active at Bijoy Sarani (Recalculating detour via Rokeya Sarani)");
+        waypoints.push([23.7807, 90.3792]);
+        detoursList.push("VIP Protocol Active at Bijoy Sarani (Detouring via Rokeya Sarani)");
       }
 
       // 2. Check Monsoon Flooding blockade detour
       if (monsoonBypassActive && linePassesNearPoint([originLat, originLng], [destLat, destLng], floodTarget, 0.012)) {
-        waypoints.push([23.7710, 90.3640]); // Agargaon link bypass
+        waypoints.push([23.7710, 90.3640]);
         detoursList.push("Severe waterlogging at Farmgate (Detouring via Mirpur Road)");
+        
+        // CNG Engine Ingest alert trigger (Feature 17)
+        if (vehicleClass === 'cng') {
+          setShowCngEngineWarning(true);
+        }
       }
 
       // 3. Check Weekly Bazaar roadblock detour
       if (weeklyBazaarActive && linePassesNearPoint([originLat, originLng], [destLat, destLng], bazaarTarget, 0.012)) {
-        waypoints.push([23.7619, 90.3895]); // Tejgaon Link detour
-        detoursList.push("Karwan Bazar weekly road market active (Rerouting to avoid vendor crowd)");
+        waypoints.push([23.7619, 90.3895]);
+        detoursList.push("Karwan Bazar weekly street vendor block (Detouring via Tejgaon)");
       }
 
       // 4. Check Rickshaw restriction on Airport Road highway
       if (vehicleClass === 'rickshaw' && linePassesNearPoint([originLat, originLng], [destLat, destLng], airportTarget, 0.025)) {
-        waypoints.push([23.8160, 90.4220]); // Kalachandpur secondary bypass lane
+        waypoints.push([23.8160, 90.4220]);
         rWarning = "Traditional Rickshaws are prohibited on Airport Road highway! Diverting through secondary lanes.";
         detoursList.push("Rickshaw highway restriction (Routing via residential lanes)");
       }
 
       // 5. If Clean Air Route is toggled, insert bypass away from high pollution zone (Tejgaon/Jatrabari)
       if (useAqiRouting && linePassesNearPoint([originLat, originLng], [destLat, destLng], [23.7600, 90.4120], 0.025)) {
-        waypoints.push([23.7900, 90.4250]); // Detour through clean air buffer zones
+        waypoints.push([23.7900, 90.4250]);
         detoursList.push("Clean Air Mode: Detouring away from high PM2.5/Construction smog");
       }
 
@@ -361,7 +407,6 @@ const LiveMap = () => {
       setActiveDetours(detoursList);
       setRickshawWarning(rWarning);
 
-      // Construct OSRM coordinate string: lng,lat;lng,lat...
       const coordinateString = waypoints.map(w => `${w[1]},${w[0]}`).join(';');
       const url = `https://router.project-osrm.org/route/v1/driving/${coordinateString}?overview=full&geometries=geojson&steps=true&alternatives=true`;
       
@@ -370,7 +415,7 @@ const LiveMap = () => {
       
       if (data && data.routes && data.routes.length > 0) {
         const calculatedRoutes = data.routes.map((route, idx) => {
-          const coords = route.geometry.coordinates.map(c => [c[1], c[0]]); // Invert [lng, lat] to [lat, lng]
+          const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
           const steps = route.legs.flatMap(leg => leg.steps).map(step => {
             let directionIcon = '🗺️';
             const type = step.maneuver.type.toLowerCase();
@@ -394,10 +439,8 @@ const LiveMap = () => {
             };
           });
 
-          // Calculate congestion score
           const congestion = calculateRouteCongestion(coords, visibleIncidents);
 
-          // Calculate duration adjusting for vehicle class speed limits
           let durationMin = Math.round(route.duration / 60);
           if (vehicleClass === 'cng') {
             durationMin = Math.round(durationMin * 1.25);
@@ -415,7 +458,6 @@ const LiveMap = () => {
           };
         });
 
-        // Sort: The first route is usually OSRM's fastest, but let's label them clearly.
         if (calculatedRoutes.length > 1) {
           calculatedRoutes[0].congestion = Math.max(15, calculatedRoutes[0].congestion - 10);
           calculatedRoutes[0].name = "Bypass Navigator (Least Traffic)";
@@ -428,7 +470,6 @@ const LiveMap = () => {
         setRoutes(calculatedRoutes);
         setActiveRouteIndex(0);
         
-        // Auto-center map to midpoint of route
         const midLat = (originLat + destLat) / 2;
         const midLng = (originLng + destLng) / 2;
         setMapCenter([midLat, midLng]);
@@ -443,14 +484,13 @@ const LiveMap = () => {
     }
   };
 
-  // Trigger route calculation automatically when inputs change
   useEffect(() => {
     if (originCoords && destCoords) {
       fetchRoutes();
     }
   }, [originCoords, destCoords, vehicleClass, vipProtocolActive, monsoonBypassActive, weeklyBazaarActive, useAqiRouting]);
 
-  // Price estimations calculations for CNG
+  // Fare Details CNG (Feature 1)
   const getCngFareDetails = () => {
     const km = parseFloat(cngDistInput) || (routes[activeRouteIndex] ? parseFloat(routes[activeRouteIndex].distanceKm) : 0) || 5;
     const govtFare = Math.round(40 + Math.max(0, km - 2) * 12 + 15);
@@ -461,6 +501,22 @@ const LiveMap = () => {
   };
 
   const fareInfo = getCngFareDetails();
+
+  // Toll Calculator details (Feature 19)
+  const getRouteTollFees = () => {
+    if (!routes[activeRouteIndex]) return 0;
+    const path = routes[activeRouteIndex].geometry;
+    let toll = 0;
+    // Padma coordinates approximation
+    const passesPadma = path.some(([lat, lng]) => lat < 23.6 && lng < 90.3);
+    const passesHanif = path.some(([lat, lng]) => lat < 23.72 && lat > 23.70 && lng > 90.41);
+    
+    if (passesPadma) toll += 1500; // Padma Bridge
+    if (passesHanif) toll += 60;   // Hanif Flyover
+    return toll;
+  };
+
+  const activeTollFee = getRouteTollFees();
 
   return (
     <>
@@ -533,12 +589,20 @@ const LiveMap = () => {
 
           {/* Ambulance flashing siren alert banner */}
           {isAmbulanceSimActive && (
-            <div style={{ position: 'absolute', top: '70px', left: '16px', right: '16px', background: 'rgba(239, 68, 68, 0.95)', color: '#fff', border: '1px solid #ff8888', borderRadius: '8px', padding: '12px', zIndex: 1000, boxShadow: '0 4px 20px rgba(0,0,0,0.4)', display: 'flex', gap: '10px', alignItems: 'center', animation: 'pulse 1.5s infinite' }}>
+            <div style={{ position: 'absolute', top: '70px', left: '16px', right: '16px', background: 'rgba(239, 68, 68, 0.95)', color: '#fff', border: '1px solid #ff8888', borderRadius: '8px', padding: '12px', zIndex: 1000, boxShadow: '0 4px 20px rgba(0,0,0,0.4)', display: 'flex', gap: '10px', alignItems: 'center' }}>
               <span style={{ fontSize: '1.4rem' }}>🚨</span>
               <div>
                 <strong style={{ display: 'block', fontSize: '0.9rem' }}>EMERGENCY SIREN DETECTED (Mirpur Road)</strong>
-                <span style={{ fontSize: '0.78rem', color: '#ffd1d1' }}>Ambulance dispatch active. All drivers within 500m of corridor please shift left and clear lanes!</span>
+                <span style={{ fontSize: '0.78rem', color: '#ffd1d1' }}>Ambulance priority wave active. All vehicles please shift left and clear lanes!</span>
               </div>
+            </div>
+          )}
+
+          {/* CNG Water intake warning card (Feature 17) */}
+          {showCngEngineWarning && (
+            <div style={{ position: 'absolute', bottom: '24px', left: '16px', right: '16px', background: 'rgba(240, 82, 91, 0.95)', color: '#fff', border: '1px solid #ffaaad', borderRadius: '8px', padding: '12px', zIndex: 1000, boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+              <strong>❌ CNG ENGINE FLOOD INGESTION RISK</strong>
+              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#ffdddf' }}>Farmgate water depth is 18 inches. Air intake of CNG auto-rickshaws is low; do not cross to prevent engine lock!</p>
             </div>
           )}
 
@@ -584,7 +648,7 @@ const LiveMap = () => {
               </CircleMarker>
             )}
 
-            {/* Render Rain Shelter Markers */}
+            {/* Render Rain Shelter Markers (Feature 3) */}
             {showRainOverlay && rainShelters.map((sh, idx) => (
               <CircleMarker
                 key={idx}
@@ -602,24 +666,86 @@ const LiveMap = () => {
               </CircleMarker>
             ))}
 
-            {/* Render Pothole and Road Damage Hazard Pins */}
-            {reportedHazards.map((haz, idx) => (
+            {/* Render Volcanizer Emergency Repair Markers (Feature 13) */}
+            {showVolcanizers && volcanizers.map((vc, idx) => (
               <CircleMarker
                 key={idx}
-                center={haz.coords}
-                radius={10}
-                pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.9, weight: 2 }}
+                center={vc.coords}
+                radius={12}
+                pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.8, weight: 2 }}
               >
                 <Popup>
                   <div style={{ color: '#fff', fontSize: '0.9rem' }}>
-                    <strong style={{ display: 'block', color: '#fbbf24' }}>🕳️ Road Damage Hazard</strong>
-                    <span>Severity: {haz.severity} (Crowdsourced Report)</span>
+                    <strong style={{ display: 'block', color: '#fbbf24' }}>🛠️ Emergency Tire Repair (Volcanizer)</strong>
+                    <strong>{vc.name}</strong>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#ccc' }}>Phone: {vc.contact}</p>
                   </div>
                 </Popup>
               </CircleMarker>
             ))}
 
-            {/* Render slippery flyover indicators if Slippery toggle is ON */}
+            {/* Render Ride stands bike markers (Feature 16) */}
+            {showRideStands && rideStands.map((stand, idx) => (
+              <CircleMarker
+                key={idx}
+                center={stand.coords}
+                radius={12}
+                pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.8, weight: 2 }}
+              >
+                <Popup>
+                  <div style={{ color: '#fff', fontSize: '0.9rem' }}>
+                    <strong style={{ display: 'block', color: '#34d399' }}>🏍️ Ride-Share Bike Stand Hub</strong>
+                    <strong>{stand.name}</strong>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#ccc' }}>Active Pathao/Obhai Riders waiting: {stand.activeBikes}</p>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ))}
+
+            {/* Render Pothole and Road Damage Hazard Pins (Feature 5) */}
+            {reportedHazards.map((haz, idx) => (
+              <CircleMarker
+                key={idx}
+                center={haz.coords}
+                radius={10}
+                pathOptions={{ color: '#eab308', fillColor: '#eab308', fillOpacity: 0.9, weight: 2 }}
+              >
+                <Popup>
+                  <div style={{ color: '#fff', fontSize: '0.9rem' }}>
+                    <strong style={{ display: 'block', color: '#facc15' }}>🕳️ Road Damage Hazard</strong>
+                    <span>Type: {haz.severity}</span>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ))}
+
+            {/* Render Camouflaged Puddles (Feature 20) */}
+            {showCamouflagedPuddles && camouflagedPuddles.map((pud, idx) => (
+              <CircleMarker
+                key={idx}
+                center={pud.coords}
+                radius={14}
+                pathOptions={{ color: '#06b6d4', fillColor: '#06b6d4', fillOpacity: 0.6, weight: 2 }}
+              >
+                <Popup>
+                  <div style={{ color: '#fff', fontSize: '0.9rem' }}>
+                    <strong style={{ display: 'block', color: '#22d3ee' }}>💧 Camouflaged Puddle Alert</strong>
+                    <span>Warning: Large puddle hiding a deep pothole beneath!</span>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ))}
+
+            {/* Render streetlight blackout zone polylines (Feature 18) */}
+            {showBlackoutZones && blackoutStreets.map((st, idx) => (
+              <Polyline
+                key={idx}
+                positions={st.coords}
+                pathOptions={{ color: '#6b7280', weight: 6, opacity: 0.8, dashArray: '2, 6' }}
+              />
+            ))}
+
+            {/* Render slippery flyover indicators if Slippery toggle is ON (Feature 6) */}
             {isSlipperyWeather && (
               <>
                 <CircleMarker
@@ -639,7 +765,7 @@ const LiveMap = () => {
               </>
             )}
 
-            {/* Render Weekly Bazaar Block marker */}
+            {/* Render Weekly Bazaar Block marker (Feature 7) */}
             {weeklyBazaarActive && (
               <CircleMarker
                 center={[23.7505, 90.3930]}
@@ -655,7 +781,7 @@ const LiveMap = () => {
               </CircleMarker>
             )}
 
-            {/* Render Animated Bus Tracker Pin */}
+            {/* Render Animated Bus Tracker Pin (Feature 2) */}
             {isBusTracking && (
               <CircleMarker
                 center={busTrackCoords[busIndex]}
@@ -672,7 +798,7 @@ const LiveMap = () => {
               </CircleMarker>
             )}
 
-            {/* Render Simulated Ambulance pathing pin */}
+            {/* Render Simulated Ambulance pathing pin (Feature 8) */}
             {isAmbulanceSimActive && (
               <CircleMarker
                 center={ambulanceTrackCoords[ambulanceIndex]}
@@ -1102,218 +1228,259 @@ const LiveMap = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <h2 className="panel-title" style={{ fontSize: '1.25rem', marginTop: 0, color: '#a855f7' }}>🚀 Dhaka Smart Hub</h2>
-                <p className="panel-subtitle" style={{ margin: 0 }}>Advanced localized commute algorithms for Bangladesh's transit bottlenecks.</p>
+                <p className="panel-subtitle" style={{ margin: 0 }}>Advanced localized commute cockpit. 20 smart city planning features.</p>
               </div>
 
-              {/* 1. CNG Price Estimator */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '0.82rem', margin: '0 0 8px 0', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🛺 CNG "Fair-Fare" Pricing</h3>
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-                  <input
-                    type="number"
-                    style={{ flexGrow: 1, height: '30px', padding: '0 8px', background: '#101319', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.78rem', color: '#fff' }}
-                    placeholder="Enter trip distance (km)..."
-                    value={cngDistInput}
-                    onChange={(e) => setCngDistInput(e.target.value)}
-                  />
-                  {routes.length > 0 && (
+              {/* ================= CATEGORY 1: COMMUTER ASSISTANCE & TOLLS ================= */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h4 style={{ fontSize: '0.78rem', margin: 0, color: '#c084fc', textTransform: 'uppercase' }}>💸 Commuters & Tolls</h4>
+                
+                {/* CNG Price check */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px' }}>
+                  <strong style={{ display: 'block', fontSize: '0.8rem', color: '#fff', marginBottom: '6px' }}>🛺 CNG "Fair-Fare" Pricing</strong>
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
+                    <input
+                      type="number"
+                      style={{ flexGrow: 1, height: '28px', padding: '0 8px', background: '#101319', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.75rem', color: '#fff' }}
+                      placeholder="trip km..."
+                      value={cngDistInput}
+                      onChange={(e) => setCngDistInput(e.target.value)}
+                    />
+                    {routes.length > 0 && (
+                      <button
+                        className="button secondary"
+                        style={{ height: '28px', padding: '0 8px', fontSize: '0.7rem', minWidth: 'auto' }}
+                        onClick={() => setCngDistInput(routes[activeRouteIndex].distanceKm)}
+                      >
+                        Use Dist
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--muted)' }}>Govt Fare: {fareInfo.govtFare} BDT</span>
+                      <span style={{ color: '#fbbf24' }}>Offer: {fareInfo.suggestMin}-{fareInfo.suggestMax} BDT</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Toll Plaza sum */}
+                {routes.length > 0 && (
+                  <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.8rem', color: '#fff' }}>🪙 Route Toll Plaza Sum</strong>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Calculated along active path</span>
+                    </div>
+                    <strong style={{ color: '#2fbf71', fontSize: '0.9rem' }}>{activeTollFee} BDT</strong>
+                  </div>
+                )}
+
+                {/* Volcanizer repair shops and CNG Pressure */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>🛠️ Show Emergency Tire Shops</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={showVolcanizers} onChange={(e) => setShowVolcanizers(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>⛽ CNG Pump Pressure</span>
+                    <select
+                      style={{ height: '24px', padding: '0 4px', background: '#101319', border: '1px solid var(--line)', borderRadius: '4px', fontSize: '0.72rem', color: '#fff' }}
+                      value={gasStationStatus}
+                      onChange={(e) => setGasStationStatus(e.target.value)}
+                    >
+                      <option value="High Pressure">⛽ High Pressure (Fast)</option>
+                      <option value="Low Pressure">⛽ Low Pressure (Queues)</option>
+                      <option value="Loadshedding/Closed">⚡ Loadshedding (Closed)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= CATEGORY 2: PUBLIC TRANSIT DECK ================= */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h4 style={{ fontSize: '0.78rem', margin: 0, color: '#c084fc', textTransform: 'uppercase' }}>🚌 Public Transit Deck</h4>
+                
+                {/* Bus Kothay */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px' }}>
+                  <strong style={{ display: 'block', fontSize: '0.8rem', color: '#fff', marginBottom: '4px' }}>🚌 "Bus Kothay" Crowdsourced GPS</strong>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <select
+                      style={{ flexGrow: 1, height: '26px', padding: '0 4px', background: '#101319', border: '1px solid var(--line)', borderRadius: '4px', fontSize: '0.75rem', color: '#fff' }}
+                      value={selectedBusRoute}
+                      onChange={(e) => setSelectedBusRoute(e.target.value)}
+                    >
+                      <option value="Raida">Raida Bus</option>
+                      <option value="Bikash">Bikash Bus</option>
+                      <option value="Turag">Turag Bus</option>
+                    </select>
+                    <button
+                      className={`button ${isBusTracking ? 'danger' : ''}`}
+                      style={{ height: '26px', padding: '0 8px', fontSize: '0.7rem', minWidth: 'auto' }}
+                      onClick={() => setIsBusTracking(!isBusTracking)}
+                    >
+                      {isBusTracking ? "Stop Tracker" : "Track Bus"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* MRT Station cards with vending stock status */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px' }}>
+                  <strong style={{ display: 'block', fontSize: '0.8rem', color: '#fff', marginBottom: '6px' }}>🚇 Metro Station Cards Stock</strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.75rem' }}>
+                    {mrtStations.map((st, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#ccc' }}>{st.name.split(' ')[0]}</span>
+                        <span style={{ color: st.cardStock.includes('Out') ? '#f0525b' : '#2fbf71' }}>{st.cardStock}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Inter-District Terminal Queue status */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px' }}>
+                  <strong style={{ display: 'block', fontSize: '0.8rem', color: '#fff', marginBottom: '6px' }}>🏬 Bus Terminal Ticket Counters</strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#ccc' }}>Gabtoli Terminal Counters:</span>
+                      <span className="badge danger">{terminalQueues.gabtoli}m wait</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#ccc' }}>Sayedabad Terminal Counters:</span>
+                      <span className="badge success">{terminalQueues.sayedabad}m wait</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= CATEGORY 3: MONSOON & HYDROLOGY ================= */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h4 style={{ fontSize: '0.78rem', margin: 0, color: '#c084fc', textTransform: 'uppercase' }}>🌦️ Monsoon & Hydrology</h4>
+                
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>☂️ Show Rain Shelters Overlay</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={showRainOverlay} onChange={(e) => setShowRainOverlay(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>🏍️ Slippery Flyover Safety Warnings</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={isSlipperyWeather} onChange={(e) => setIsSlipperyWeather(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>💧 Show Camouflaged Puddles</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={showCamouflagedPuddles} onChange={(e) => setShowCamouflagedPuddles(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= CATEGORY 4: URBAN SAFETY & REPORTS ================= */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h4 style={{ fontSize: '0.78rem', margin: 0, color: '#c084fc', textTransform: 'uppercase' }}>🚶 Urban Safety & Reports</h4>
+                
+                {/* Overbridge block */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px', fontSize: '0.78rem' }}>
+                  <strong style={{ display: 'block', color: '#fff', marginBottom: '2px' }}>🚶 Foot-Overbridge Safety</strong>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                    <span style={{ color: '#ccc' }}>{overbridgeCondition.name}:</span>
+                    <span style={{ color: '#fbbf24' }}>{overbridgeCondition.state}</span>
+                  </div>
+                </div>
+
+                {/* Ride stand indicators & blackout toggle */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>🏍️ Ride-Share Stands (Pathao Hotspots)</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={showRideStands} onChange={(e) => setShowRideStands(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>🕯️ Streetlight Blackout Zones</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={showBlackoutZones} onChange={(e) => setShowBlackoutZones(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>🌫️ Clean Air Route Optimizer</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={useAqiRouting} onChange={(e) => setUseAqiRouting(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Pothole reporter */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px' }}>
+                  <strong style={{ display: 'block', fontSize: '0.8rem', color: '#fff', marginBottom: '4px' }}>🕳️ Crowdsourced Hazard Reporter</strong>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <select
+                      style={{ flexGrow: 1, height: '26px', padding: '0 4px', background: '#101319', border: '1px solid var(--line)', borderRadius: '4px', fontSize: '0.75rem', color: '#fff' }}
+                      value={tempHazardSeverity}
+                      onChange={(e) => setTempHazardSeverity(e.target.value)}
+                    >
+                      <option value="Deep Pothole">Deep Pothole</option>
+                      <option value="Water Puddle">Water Puddle</option>
+                      <option value="Engine Breaker">Engine Breaker Pit</option>
+                    </select>
+                    <button
+                      className={`button ${pickMode === 'hazard' ? '' : 'secondary'}`}
+                      style={{ height: '26px', padding: '0 8px', fontSize: '0.7rem', minWidth: 'auto' }}
+                      onClick={() => setPickMode(pickMode === 'hazard' ? null : 'hazard')}
+                    >
+                      Drop Pin
+                    </button>
+                  </div>
+                </div>
+
+                {/* Ambulance wave and Weekly bazaar */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '10px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>🛍️ Weekly Bazaar (Karwan Bazar)</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input type="checkbox" checked={weeklyBazaarActive} onChange={(e) => setWeeklyBazaarActive(e.target.checked)} />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#ccc' }}>🚑 Ambulance Dispatch wave</span>
                     <button
                       className="button secondary"
-                      style={{ height: '30px', padding: '0 10px', fontSize: '0.72rem', minWidth: 'auto' }}
-                      onClick={() => setCngDistInput(routes[activeRouteIndex].distanceKm)}
+                      style={{ height: '24px', padding: '0 8px', fontSize: '0.65rem', minWidth: 'auto' }}
+                      onClick={() => {
+                        setIsAmbulanceSimActive(!isAmbulanceSimActive);
+                        setAmbulanceIndex(0);
+                      }}
                     >
-                      Use Route Dist
+                      {isAmbulanceSimActive ? "Stop Dispatch" : "Dispatch"}
                     </button>
-                  )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--muted)' }}>Govt Meter Rate:</span>
-                    <strong style={{ color: '#2fbf71' }}>{fareInfo.govtFare} BDT</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--muted)' }}>Dhaka Market Ask:</span>
-                    <strong style={{ color: '#f0525b' }}>{fareInfo.marketFare} BDT</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '4px', marginTop: '4px' }}>
-                    <span style={{ color: '#fff' }}>Recommended Offer:</span>
-                    <strong style={{ color: '#fbbf24' }}>{fareInfo.suggestMin} - {fareInfo.suggestMax} BDT</strong>
                   </div>
                 </div>
               </div>
 
-              {/* 2. Bus Kothay Live Tracker */}
+              {/* Toll plazas exit delay predictors */}
               <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '0.82rem', margin: '0 0 8px 0', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🚌 "Bus Kothay" Crowdsourced GPS</h3>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                  <select
-                    style={{ flexGrow: 1, height: '30px', padding: '0 6px', background: '#101319', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.78rem', color: '#fff' }}
-                    value={selectedBusRoute}
-                    onChange={(e) => setSelectedBusRoute(e.target.value)}
-                  >
-                    <option value="Raida">Raida (Uttara - Motijheel)</option>
-                    <option value="Bikash">Bikash (Mirpur - Azimpur)</option>
-                    <option value="Turag">Turag (Gazipur - Jatrabari)</option>
-                  </select>
-                  <button
-                    className={`button ${isBusTracking ? 'danger' : ''}`}
-                    style={{ height: '30px', padding: '0 12px', fontSize: '0.72rem', minWidth: 'auto' }}
-                    onClick={() => setIsBusTracking(!isBusTracking)}
-                  >
-                    {isBusTracking ? "Stop Sim" : "Broadcast Ride"}
-                  </button>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--muted)' }}>
-                  {isBusTracking ? "🟢 Broadcasting live bus marker on map. Moving along transit corridor." : "🔴 Tap Broadcast to mock commuter-based bus GPS signals on the map."}
-                </p>
-              </div>
-
-              {/* 3 & 6. Monsoon rain overlay + Slippery flyovers */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h3 style={{ fontSize: '0.82rem', margin: 0, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🌦️ Monsoon & Flyover Alert</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', color: '#ccc' }}>☂️ Show Rain Shelters</span>
-                  <label className="sim-toggle" style={{ margin: 0 }}>
-                    <input
-                      type="checkbox"
-                      checked={showRainOverlay}
-                      onChange={(e) => setShowRainOverlay(e.target.checked)}
-                    />
-                    <span className="sim-toggle-slider" />
-                  </label>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', color: '#ccc' }}>🏍️ Slippery Flyover Safety Warnings</span>
-                  <label className="sim-toggle" style={{ margin: 0 }}>
-                    <input
-                      type="checkbox"
-                      checked={isSlipperyWeather}
-                      onChange={(e) => setIsSlipperyWeather(e.target.checked)}
-                    />
-                    <span className="sim-toggle-slider" />
-                  </label>
-                </div>
-              </div>
-
-              {/* 4. MRT ticket counters wait monitor */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '0.82rem', margin: '0 0 8px 0', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🚇 Metro Rail (MRT 6) Ticket Queue</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {mrtStations.map((st, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem' }}>
-                      <span style={{ color: '#eee' }}>{st.name}</span>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <span className={`badge ${st.waitMin > 20 ? 'danger' : st.waitMin > 10 ? 'warning' : 'success'}`}>{st.waitMin}m wait</span>
-                        <button
-                          style={{ height: '20px', padding: '0 4px', fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--line)', color: '#fff', cursor: 'pointer', borderRadius: '4px' }}
-                          onClick={() => {
-                            const newWait = prompt(`Enter wait time in minutes for ${st.name}:`, st.waitMin);
-                            if (newWait !== null && !isNaN(parseInt(newWait))) {
-                              const updated = [...mrtStations];
-                              updated[idx].waitMin = parseInt(newWait);
-                              setMrtStations(updated);
-                            }
-                          }}
-                        >
-                          ✏️
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 5. Post-monsoon road damage hazard reporter */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '0.82rem', margin: '0 0 8px 0', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🕳️ Road Damage Hazard Reporter</h3>
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-                  <select
-                    style={{ flexGrow: 1, height: '30px', padding: '0 6px', background: '#101319', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.78rem', color: '#fff' }}
-                    value={tempHazardSeverity}
-                    onChange={(e) => setTempHazardSeverity(e.target.value)}
-                  >
-                    <option value="Deep Pothole">Deep Pothole (Yellow Pin)</option>
-                    <option value="Water Puddle">Large Water Puddle</option>
-                    <option value="Engine Breaker">Engine Breaker Pit</option>
-                  </select>
-                  <button
-                    className={`button ${pickMode === 'hazard' ? '' : 'secondary'}`}
-                    style={{ height: '30px', padding: '0 10px', fontSize: '0.72rem', minWidth: 'auto' }}
-                    onClick={() => setPickMode(pickMode === 'hazard' ? null : 'hazard')}
-                  >
-                    📍 Drop Pin
-                  </button>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--muted)' }}>
-                  {pickMode === 'hazard' ? "🎯 Click anywhere on the map to place a pothole hazard warning." : "Tap Drop Pin and click map to mock a live crowdsourced hazard report."}
-                </p>
-              </div>
-
-              {/* 7. Weekly bazaar toggle */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ fontSize: '0.82rem', margin: 0, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🛍️ Weekly Bazaar active</h3>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Blocks Karwan Bazar vendor alleys</span>
-                </div>
-                <label className="sim-toggle" style={{ margin: 0 }}>
-                  <input
-                    type="checkbox"
-                    checked={weeklyBazaarActive}
-                    onChange={(e) => setWeeklyBazaarActive(e.target.checked)}
-                  />
-                  <span className="sim-toggle-slider" />
-                </label>
-              </div>
-
-              {/* 8. Ambulance priority simulation toggle */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ fontSize: '0.82rem', margin: 0, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🚑 Ambulance priority wave</h3>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Simulates emergency green cascade</span>
-                </div>
-                <button
-                  className="button secondary"
-                  style={{ height: '30px', padding: '0 12px', fontSize: '0.72rem', minWidth: 'auto', border: isAmbulanceSimActive ? '1px solid var(--danger)' : '1px solid var(--line)' }}
-                  onClick={() => {
-                    setIsAmbulanceSimActive(!isAmbulanceSimActive);
-                    setAmbulanceIndex(0);
-                  }}
-                >
-                  {isAmbulanceSimActive ? "Stop Sim" : "Dispatch Sim"}
-                </button>
-              </div>
-
-              {/* 9. AQI Clean Air optimizer */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ fontSize: '0.82rem', margin: 0, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🌫️ Clean Air Route Optimizer</h3>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Diverts pathing away from construction smog</span>
-                </div>
-                <label className="sim-toggle" style={{ margin: 0 }}>
-                  <input
-                    type="checkbox"
-                    checked={useAqiRouting}
-                    onChange={(e) => setUseAqiRouting(e.target.checked)}
-                  />
-                  <span className="sim-toggle-slider" />
-                </label>
-              </div>
-
-              {/* 10. Toll plaza predictors */}
-              <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '0.82rem', margin: '0 0 8px 0', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🌉 Toll Exit Plaza Delay Predictor</h3>
+                <h3 style={{ fontSize: '0.82rem', margin: '0 0 8px 0', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🌉 Toll exit plaza delay predictor</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.78rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#ccc' }}>Padma Bridge Toll Plaza:</span>
-                    <span className="badge success">{tollDelays.padma} min wait (Fluid)</span>
+                    <span style={{ color: '#ccc' }}>Padma Bridge Toll:</span>
+                    <span className="badge success">{tollDelays.padma}m queue</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#ccc' }}>Hanif Flyover Exit Toll:</span>
-                    <span className="badge danger">{tollDelays.hanif} min wait (Blocked)</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#ccc' }}>Airport Expressway Toll:</span>
-                    <span className="badge warning">{tollDelays.airport} min wait (Moderate)</span>
+                    <span style={{ color: '#ccc' }}>Hanif Flyover Toll:</span>
+                    <span className="badge danger">{tollDelays.hanif}m queue</span>
                   </div>
                 </div>
               </div>
