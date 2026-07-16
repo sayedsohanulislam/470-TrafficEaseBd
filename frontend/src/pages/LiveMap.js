@@ -34,6 +34,38 @@ const MapEventsHandler = ({ onMapClick }) => {
   return null;
 };
 
+// Helper function: check if a line segment passes near a point
+const linePassesNearPoint = (p1, p2, target, threshold = 0.015) => {
+  const [y1, x1] = p1;
+  const [y2, x2] = p2;
+  const [yt, xt] = target;
+  
+  const A = yt - y1;
+  const B = xt - x1;
+  const C = y2 - y1;
+  const D = x2 - x1;
+  
+  const dot = A * C + B * D;
+  const lenSq = C * C + D * D;
+  let param = -1;
+  if (lenSq !== 0) param = dot / lenSq;
+  
+  let xx, yy;
+  if (param < 0) {
+    yy = y1;
+    xx = x1;
+  } else if (param > 1) {
+    yy = y2;
+    xx = x2;
+  } else {
+    yy = y1 + param * C;
+    xx = x1 + param * D;
+  }
+  
+  const dist = Math.sqrt(Math.pow(yt - yy, 2) + Math.pow(xt - xx, 2));
+  return dist < threshold;
+};
+
 const LiveMap = () => {
   const [incidents, setIncidents] = useState([]);
   const [vehicles, setVehicles] = useState([]);
@@ -62,6 +94,13 @@ const LiveMap = () => {
   
   // Map click pickers toggle: 'origin', 'destination', or null
   const [pickMode, setPickMode] = useState(null);
+
+  // Dhaka-specific routing state toggles
+  const [vehicleClass, setVehicleClass] = useState('car'); // 'car', 'cng', 'rickshaw'
+  const [vipProtocolActive, setVipProtocolActive] = useState(false);
+  const [monsoonBypassActive, setMonsoonBypassActive] = useState(false);
+  const [rickshawWarning, setRickshawWarning] = useState('');
+  const [activeDetours, setActiveDetours] = useState([]);
 
   // Routing results
   const [routes, setRoutes] = useState([]); // Array of route options
@@ -141,7 +180,7 @@ const LiveMap = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (originQuery.trim().length > 2 && pickMode !== 'origin') {
+      if (originQuery.trim().length > 2 && pickMode !== 'origin' && !originQuery.includes('(Picked')) {
         handleGeocodeSearch(originQuery, setOriginResults, setLoadingOrigin);
       } else {
         setOriginResults([]);
@@ -152,7 +191,7 @@ const LiveMap = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (destQuery.trim().length > 2 && pickMode !== 'destination') {
+      if (destQuery.trim().length > 2 && pickMode !== 'destination' && !destQuery.includes('(Picked')) {
         handleGeocodeSearch(destQuery, setDestResults, setLoadingDest);
       } else {
         setDestResults([]);
@@ -195,10 +234,47 @@ const LiveMap = () => {
     setLoadingRoutes(true);
     setRouteError('');
     setRoutes([]);
+    setRickshawWarning('');
+    setActiveDetours([]);
+
     try {
       const [originLat, originLng] = originCoords;
       const [destLat, destLng] = destCoords;
-      const url = `https://router.project-osrm.org/route/v1/driving/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson&steps=true&alternatives=true`;
+      
+      const vipTarget = [23.7684, 90.3789]; // Bijoy Sarani intersection
+      const floodTarget = [23.7561, 90.3897]; // Farmgate intersection
+      const airportTarget = [23.8300, 90.4100]; // Airport highway segment
+
+      let waypoints = [[originLat, originLng]];
+      let detoursList = [];
+      let rWarning = '';
+
+      // 1. Check VIP blockade detour
+      if (vipProtocolActive && linePassesNearPoint([originLat, originLng], [destLat, destLng], vipTarget, 0.015)) {
+        waypoints.push([23.7807, 90.3792]); // Rokeya Sarani bypass
+        detoursList.push("VIP Protocol Active at Bijoy Sarani (Recalculating detour via Rokeya Sarani)");
+      }
+
+      // 2. Check Monsoon Flooding blockade detour
+      if (monsoonBypassActive && linePassesNearPoint([originLat, originLng], [destLat, destLng], floodTarget, 0.012)) {
+        waypoints.push([23.7710, 90.3640]); // Agargaon link bypass
+        detoursList.push("Severe waterlogging at Farmgate (Detouring via Mirpur Road)");
+      }
+
+      // 3. Check Rickshaw restriction on Airport Road highway
+      if (vehicleClass === 'rickshaw' && linePassesNearPoint([originLat, originLng], [destLat, destLng], airportTarget, 0.025)) {
+        waypoints.push([23.8160, 90.4220]); // Kalachandpur secondary bypass lane
+        rWarning = "Traditional Rickshaws are prohibited on Airport Road highway! Diverting through secondary lanes.";
+        detoursList.push("Rickshaw highway restriction (Routing via residential lanes)");
+      }
+
+      waypoints.push([destLat, destLng]);
+      setActiveDetours(detoursList);
+      setRickshawWarning(rWarning);
+
+      // Construct OSRM coordinate string: lng,lat;lng,lat...
+      const coordinateString = waypoints.map(w => `${w[1]},${w[0]}`).join(';');
+      const url = `https://router.project-osrm.org/route/v1/driving/${coordinateString}?overview=full&geometries=geojson&steps=true&alternatives=true`;
       
       const res = await fetch(url);
       const data = await res.json();
@@ -206,7 +282,7 @@ const LiveMap = () => {
       if (data && data.routes && data.routes.length > 0) {
         const calculatedRoutes = data.routes.map((route, idx) => {
           const coords = route.geometry.coordinates.map(c => [c[1], c[0]]); // Invert [lng, lat] to [lat, lng]
-          const steps = route.legs[0].steps.map(step => {
+          const steps = route.legs.flatMap(leg => leg.steps).map(step => {
             let directionIcon = '🗺️';
             const type = step.maneuver.type.toLowerCase();
             const modifier = step.maneuver.modifier ? step.maneuver.modifier.toLowerCase() : '';
@@ -231,19 +307,26 @@ const LiveMap = () => {
 
           // Calculate congestion score
           const congestion = calculateRouteCongestion(coords, visibleIncidents);
+
+          // Calculate duration adjusting for vehicle class speed limits
+          let durationMin = Math.round(route.duration / 60);
+          if (vehicleClass === 'cng') {
+            durationMin = Math.round(durationMin * 1.25);
+          } else if (vehicleClass === 'rickshaw') {
+            durationMin = Math.round(durationMin * 3.2);
+          }
           
           return {
             geometry: coords,
             steps: steps,
             distanceKm: (route.distance / 1000).toFixed(1),
-            durationMin: Math.round(route.duration / 60),
+            durationMin: durationMin,
             congestion: congestion,
-            name: idx === 0 ? "Bypass Option A" : `Alternative Path ${idx}`
+            name: idx === 0 ? "Bypass Navigator (Least Traffic)" : `Alternative Path ${idx}`
           };
         });
 
         // Sort: The first route is usually OSRM's fastest, but let's label them clearly.
-        // We will make sure they have slightly different simulated scores to emphasize "least congestion" choice.
         if (calculatedRoutes.length > 1) {
           calculatedRoutes[0].congestion = Math.max(15, calculatedRoutes[0].congestion - 10);
           calculatedRoutes[0].name = "Bypass Navigator (Least Traffic)";
@@ -271,12 +354,12 @@ const LiveMap = () => {
     }
   };
 
-  // Trigger route calculation automatically when both coords are populated
+  // Trigger route calculation automatically when inputs change
   useEffect(() => {
     if (originCoords && destCoords) {
       fetchRoutes();
     }
-  }, [originCoords, destCoords]);
+  }, [originCoords, destCoords, vehicleClass, vipProtocolActive, monsoonBypassActive]);
 
   return (
     <>
@@ -356,6 +439,38 @@ const LiveMap = () => {
               url="https://{s}.google.com/vt/lyrs=m,traffic&hl=en&x={x}&y={y}&z={z}"
               subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
             />
+
+            {/* Render VIP blockade circle */}
+            {vipProtocolActive && (
+              <CircleMarker
+                center={[23.7684, 90.3789]}
+                radius={25}
+                pathOptions={{ color: '#a855f7', fillColor: '#a855f7', fillOpacity: 0.35, weight: 3, dashArray: '5, 5' }}
+              >
+                <Popup>
+                  <div style={{ color: '#fff', fontSize: '0.9rem' }}>
+                    <strong style={{ display: 'block', color: '#a855f7' }}>🛑 VIP Protocol active</strong>
+                    <span>Bijoy Sarani intersection blocked. Detour required.</span>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            )}
+
+            {/* Render Monsoon flood sensor circle */}
+            {monsoonBypassActive && (
+              <CircleMarker
+                center={[23.7561, 90.3897]}
+                radius={20}
+                pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.25, weight: 2 }}
+              >
+                <Popup>
+                  <div style={{ color: '#fff', fontSize: '0.9rem' }}>
+                    <strong style={{ display: 'block', color: '#f0525b' }}>⚠️ Severe Waterlogging</strong>
+                    <span>Farmgate depth exceeds 18 inches. Slow clearance.</span>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            )}
 
             {/* Standard Corridors */}
             {routes.length === 0 && (
@@ -532,10 +647,67 @@ const LiveMap = () => {
           ) : (
             <>
               <h2 className="panel-title" style={{ fontSize: '1.2rem', marginTop: 0 }}>Bypass Route Planner</h2>
-              <p className="panel-subtitle" style={{ margin: 0 }}>Input landmarks or click on map to overlay the lowest-congestion routing option.</p>
+              <p className="panel-subtitle" style={{ margin: 0 }}>Select vehicle, active smart constraints, or click map to set route pins.</p>
+
+              {/* Advanced Dhaka-Specific Toggles */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--line)', padding: '12px', borderRadius: '8px', marginTop: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 'bold' }}>Vehicle Type</label>
+                  <select
+                    style={{ height: '36px', padding: '0 8px', background: '#101319', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.82rem', color: '#fff', width: '100%' }}
+                    value={vehicleClass}
+                    onChange={(e) => setVehicleClass(e.target.value)}
+                  >
+                    <option value="car">🚘 Private Car (Standard)</option>
+                    <option value="cng">🛺 CNG Auto-Rickshaw</option>
+                    <option value="rickshaw">🚲 Traditional Rickshaw (Highway Restricted)</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.82rem', color: '#ccc' }}>⛔ Avoid VIP Protocol Blocks</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input
+                        type="checkbox"
+                        checked={vipProtocolActive}
+                        onChange={(e) => setVipProtocolActive(e.target.checked)}
+                      />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.82rem', color: '#ccc' }}>🌧️ Avoid Monsoon Floods (Farmgate)</span>
+                    <label className="sim-toggle" style={{ margin: 0 }}>
+                      <input
+                        type="checkbox"
+                        checked={monsoonBypassActive}
+                        onChange={(e) => setMonsoonBypassActive(e.target.checked)}
+                      />
+                      <span className="sim-toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning notifications for routing */}
+              {rickshawWarning && (
+                <div className="message error" style={{ padding: '8px 12px', fontSize: '0.78rem', borderRadius: '6px', margin: '4px 0' }}>
+                  ⚠️ {rickshawWarning}
+                </div>
+              )}
+
+              {activeDetours.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(168, 85, 247, 0.08)', border: '1px dashed #a855f7', padding: '10px', borderRadius: '6px', margin: '4px 0' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#c084fc', textTransform: 'uppercase' }}>Active Detours Applied:</span>
+                  {activeDetours.map((det, i) => (
+                    <span key={i} style={{ fontSize: '0.75rem', color: '#e9d5ff' }}>• {det}</span>
+                  ))}
+                </div>
+              )}
 
               {/* Route Input Form */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
                 
                 {/* Origin Input */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}>
@@ -629,6 +801,8 @@ const LiveMap = () => {
                       setDestQuery('');
                       setRoutes([]);
                       setRouteError('');
+                      setRickshawWarning('');
+                      setActiveDetours([]);
                     }}
                   >
                     Reset Routing
@@ -706,4 +880,3 @@ const LiveMap = () => {
 };
 
 export default LiveMap;
-
