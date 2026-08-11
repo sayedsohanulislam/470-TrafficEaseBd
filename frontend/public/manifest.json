@@ -1,0 +1,9 @@
+﻿{
+  "short_name": "TrafficEase BD",
+  "name": "TrafficEase BD — Dhaka Traffic Platform",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffb020",
+  "background_color": "#0a0c10"
+}
