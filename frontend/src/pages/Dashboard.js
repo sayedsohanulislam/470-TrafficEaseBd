@@ -1,0 +1,378 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../services/api';
+import { demoLiveTraffic } from '../data/trafficDemoData';
+import { useAuth } from '../context/AuthContext';
+
+const initialState = {
+  summary: null,
+  incidents: [],
+  vehicles: [],
+  alerts: [],
+  parking: [],
+  traffic: demoLiveTraffic
+};
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const [data, setData] = useState(initialState);
+  const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState('');
+  const canUpdateStatus = ['Admin', 'Authority'].includes(user?.role);
+  const canApprove = user?.role === 'Admin';
+  const canDelete = user?.role === 'Admin';
+  const canReport = ['Commuter', 'Driver'].includes(user?.role);
+
+  const loadData = () => {
+    Promise.allSettled([
+      api.get('/summary'),
+      api.get(canApprove ? '/incidents?limit=50&moderation=all' : '/incidents?limit=20'),
+      api.get('/vehicles?limit=6'),
+      api.get('/alerts?active=true'),
+      api.get('/parking'),
+      api.get('/live-traffic')
+    ]).then((results) => {
+      setData({
+        summary: results[0].value?.data || null,
+        incidents: results[1].value?.data?.items || [],
+        vehicles: results[2].value?.data?.items || [],
+        alerts: results[3].value?.data?.items || [],
+        parking: results[4].value?.data?.items || [],
+        traffic: results[5].value?.data || demoLiveTraffic
+      });
+    }).finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleUpdateStatus = async (id, status) => {
+    setActionError('');
+    try {
+      await api.put(`/incidents/${id}`, { status });
+      loadData();
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Unable to update the incident.');
+    }
+  };
+
+  const handleDeleteIncident = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this incident report?")) return;
+    try {
+      setActionError('');
+      await api.delete(`/incidents/${id}`);
+      loadData();
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Unable to delete the incident.');
+    }
+  };
+
+  const handleApproveIncident = async (id) => {
+    try {
+      setActionError('');
+      await api.patch(`/incidents/${id}/approve`);
+      loadData();
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Unable to approve the incident.');
+    }
+  };
+
+  const summary = data.summary || {
+    incidents: data.incidents.length,
+    vehicles: data.vehicles.length,
+    activeAlerts: data.alerts.length,
+    parkingSpaces: data.parking.reduce((sum, item) => sum + Number(item.availableSpaces || 0), 0)
+  };
+
+  return (
+    <>
+      {/* Breadcrumb */}
+      <nav className="breadcrumb animate-in">
+        <Link to="/">Home</Link>
+        <span className="breadcrumb-sep">›</span>
+        <span className="breadcrumb-current">Dashboard</span>
+      </nav>
+
+      <div className="section-header animate-in">
+        <div>
+          <h1>Your Traffic Dashboard</h1>
+          <p>Monitor live incidents, corridors, and alerts for Dhaka.</p>
+        </div>
+      </div>
+
+      {actionError && <div className="message error">{actionError}</div>}
+      {!canUpdateStatus && (
+        <div className="message" style={{ marginBottom: '18px' }}>
+          Hello {user?.name || 'there'}! You are logged in as a {user?.role || 'Commuter'}. You can submit road problem reports and track admin approval from My Reported Incidents.
+        </div>
+      )}
+      {canApprove && (
+        <div className="message" style={{ marginBottom: '18px' }}>
+          Admin moderation is active. Pending reports remain hidden from the public incident map until you approve them. Only admins can approve or delete reports.
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="quick-actions animate-in animate-in-delay-1">
+        {canReport && (
+          <Link to="/report-incident" className="quick-action-btn">
+            <span className="qa-icon">⚠️</span> Report Problem
+          </Link>
+        )}
+        <Link to="/live-map" className="quick-action-btn">
+          <span className="qa-icon">🗺️</span> Show Live Map
+        </Link>
+        <Link to="/live-traffic" className="quick-action-btn">
+          <span className="qa-icon">🚦</span> Road Speeds
+        </Link>
+        <Link to="/smart-hub" className="quick-action-btn">
+          <span className="qa-icon">✨</span> All Services
+        </Link>
+      </div>
+
+      {/* Stats */}
+      <section className="grid grid-4 animate-in animate-in-delay-1" style={{ marginBottom: '24px' }}>
+        <article className="stat-tile">
+          <span>Active Reports</span>
+          <strong>{summary.incidents}</strong>
+          <p>Jams, crashes, or floods</p>
+        </article>
+        <article className="stat-tile">
+          <span>Support Vehicles</span>
+          <strong>{summary.vehicles}</strong>
+          <p>Emergency units on duty</p>
+        </article>
+        <article className="stat-tile">
+          <span>Public Alerts</span>
+          <strong>{summary.activeAlerts}</strong>
+          <p>Official notices broadcasted</p>
+        </article>
+        <article className="stat-tile">
+          <span>City Jam Level</span>
+          <strong>{data.traffic.averageCongestion}%</strong>
+          <p>Average traffic pressure</p>
+        </article>
+      </section>
+
+      <div className="lane-divider" aria-hidden="true" style={{ margin: '24px 0' }} />
+
+      {/* Ops Grid */}
+      <section className="ops-grid dashboard-ops animate-in animate-in-delay-2" style={{ marginBottom: '32px' }}>
+        <article className="card dense-card">
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>📊 Congested Dhaka Roads</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {data.traffic.corridors.slice(0, 5).map((corridor) => (
+              <div className="mini-row" key={corridor.id}>
+                <div>
+                  <strong>{corridor.name}</strong>
+                  <span>{corridor.cause}</span>
+                </div>
+                <span className={`badge ${corridor.congestion > 80 ? 'danger' : 'warning'}`}>{corridor.congestion}%</span>
+                <div className="progress-track" style={{ gridColumn: '1 / -1', marginTop: '6px' }}><span style={{ width: `${corridor.congestion}%` }} /></div>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="card dense-card">
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>🚨 Traffic Control & Support Dispatch</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {data.traffic.dispatchQueue.map((task) => (
+              <div className="mini-row" key={task.task}>
+                <div>
+                  <strong>{task.task}</strong>
+                  <span>{task.owner}</span>
+                </div>
+                <span className={`badge ${task.priority === 'Critical' ? 'danger' : 'warning'}`}>{task.etaMin} min</span>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <div className="lane-divider" aria-hidden="true" style={{ margin: '24px 0' }} />
+
+      {/* Recent Incidents */}
+      <section className="section-header animate-in animate-in-delay-2" style={{ margin: '20px 0 16px' }}>
+        <div>
+          <h2>Recent Road Reports</h2>
+          <p>{loading ? 'Loading reports...' : 'Traffic reports submitted by the community and updates from traffic police.'}</p>
+        </div>
+      </section>
+
+      <div className="table-wrap animate-in animate-in-delay-3">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Severity</th>
+              <th>Approval</th>
+              <th>Status</th>
+              <th>Location</th>
+              <th>Reporter</th>
+              <th style={{ width: '280px' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.incidents.map((incident) => (
+              <tr key={incident._id}>
+                <td style={{ fontWeight: '600', color: '#fff' }}>{incident.title}</td>
+                <td>{incident.type}</td>
+                <td>
+                  <span className={`badge ${incident.severity === 'High' || incident.severity === 'Critical' ? 'danger' : incident.severity === 'Medium' ? 'warning' : 'success'}`}>
+                    {incident.severity}
+                  </span>
+                </td>
+                <td>
+                  <span className={`badge ${incident.approvalStatus === 'Pending' ? 'warning' : 'success'}`}>
+                    {incident.approvalStatus || 'Approved'}
+                  </span>
+                </td>
+                <td>
+                  <span className="badge" style={{ background: 'rgba(255, 255, 255, 0.05)', color: '#fff' }}>
+                    {incident.status}
+                  </span>
+                </td>
+                <td>{incident.locationName}</td>
+                <td>{incident.reportedBy?.name || 'Community'}<br /><small>{incident.reportedBy?.role || 'Reporter'}</small></td>
+                <td>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <Link
+                      to="/live-map"
+                      state={{ focusCoordinates: incident.coordinates || incident.location?.coordinates }}
+                      className="badge success"
+                      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
+                    >
+                      📍 Locate
+                    </Link>
+                    {canApprove && incident.approvalStatus === 'Pending' && (
+                      <button
+                        type="button"
+                        onClick={() => handleApproveIncident(incident._id)}
+                        className="badge success"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        ✓ Approve
+                      </button>
+                    )}
+                    {canUpdateStatus && incident.status !== 'Resolved' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(incident._id, 'Resolved')}
+                        className="badge"
+                        style={{ cursor: 'pointer', background: 'rgba(47, 191, 113, 0.1)', color: '#2fbf71', border: '1px solid rgba(47, 191, 113, 0.2)' }}
+                      >
+                        ✓ Resolve
+                      </button>
+                    )}
+                    {canUpdateStatus && incident.status === 'Open' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(incident._id, 'Investigating')}
+                        className="badge"
+                        style={{ cursor: 'pointer', background: 'rgba(255, 176, 32, 0.1)', color: '#ffb020', border: '1px solid rgba(255, 176, 32, 0.2)' }}
+                      >
+                        🔍 Investigate
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteIncident(incident._id)}
+                        className="badge danger"
+                        style={{ cursor: 'pointer' }}
+                      >
+                      ✕ Delete
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      <div className="incident-card-list">
+        {data.incidents.map((incident) => (
+          <div key={incident._id} className="incident-mobile-card">
+            <div className="imc-header">
+              <strong>{incident.title}</strong>
+              <span className={`badge ${incident.severity === 'High' || incident.severity === 'Critical' ? 'danger' : incident.severity === 'Medium' ? 'warning' : 'success'}`}>{incident.severity}</span>
+            </div>
+            <div className="imc-meta">
+              <span>{incident.type}</span>
+              <span>{incident.locationName}</span>
+              <span>{incident.reportedBy?.role || 'Community'}</span>
+              <span className={`badge ${incident.approvalStatus === 'Pending' ? 'warning' : 'success'}`}>{incident.approvalStatus || 'Approved'}</span>
+              <span className="badge" style={{background:'rgba(255,255,255,0.05)',color:'#fff'}}>{incident.status}</span>
+            </div>
+            {canApprove && (
+              <div className="imc-actions">
+                {incident.approvalStatus === 'Pending' && <button type="button" className="badge success" onClick={() => handleApproveIncident(incident._id)}>✓ Approve</button>}
+                <button type="button" className="badge danger" onClick={() => handleDeleteIncident(incident._id)}>✕ Delete</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+        {!data.incidents.length && (
+          <div className="empty-state">
+            <div className="empty-state-icon">📋</div>
+            <strong style={{ color: '#fff' }}>No incidents logged</strong>
+            <p>When commuters or field units report incidents, they will appear here for coordination.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="lane-divider" aria-hidden="true" style={{ margin: '24px 0' }} />
+
+      {/* Alerts & Fleet */}
+      <section className="grid grid-2 animate-in animate-in-delay-3" style={{ marginTop: '32px' }}>
+        <article className="card">
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>🔔 Active Alerts</h2>
+          <div className="status-list">
+            {data.alerts.map((alert) => (
+              <div className="status-item" key={alert._id}>
+                <div>
+                  <strong>{alert.title}</strong>
+                  <span>{alert.area} - {alert.message}</span>
+                </div>
+                <span className="badge danger" style={{ whiteSpace: 'nowrap' }}>{alert.severity}</span>
+              </div>
+            ))}
+            {!data.alerts.length && (
+              <div className="empty-state" style={{ padding: '24px 0' }}>
+                <div className="empty-state-icon">✅</div>
+                <p>No active broadcast alerts.</p>
+              </div>
+            )}
+          </div>
+        </article>
+
+        <article className="card">
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>🚗 Fleet Snapshot</h2>
+          <div className="status-list">
+            {data.vehicles.map((vehicle) => (
+              <div className="status-item" key={vehicle._id}>
+                <div>
+                  <strong>{vehicle.vehicleNumber}</strong>
+                  <span>{vehicle.type} - Driver: {vehicle.driverName || 'N/A'}</span>
+                </div>
+                <span className="badge success">{vehicle.status}</span>
+              </div>
+            ))}
+            {!data.vehicles.length && (
+              <div className="empty-state" style={{ padding: '24px 0' }}>
+                <div className="empty-state-icon">🚗</div>
+                <p>No fleet vehicles active.</p>
+              </div>
+            )}
+          </div>
+        </article>
+      </section>
+    </>
+  );
+};
+
+export default Dashboard;
