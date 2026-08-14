@@ -1,6 +1,8 @@
-# TrafficEase BD Feature Traceability Matrix
+# TrafficEase BD Supporting Technical Capability Matrix
 
-This is the canonical feature list for the project idea, SRS, source code, demonstration, and contribution evidence. Authentication is a platform prerequisite and is not counted as a feature.
+This matrix records the original traffic-control, analytics, and authority capabilities. It is retained for technical traceability and contribution evidence, but it is **not** the commuter-facing feature count. The canonical 20 user-completable services are defined in [CITIZEN_SERVICE_TRACEABILITY.md](CITIZEN_SERVICE_TRACEABILITY.md).
+
+The public interface no longer exposes these entries as a 30-card simulator catalogue. Relevant capabilities continue to support live road summaries, protected authority workflows, APIs, models, and automated tests.
 
 | ID | Functional requirement | Primary interface | Backend/model evidence | Acceptance evidence | Documented lead |
 |---:|---|---|---|---|---|

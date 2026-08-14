@@ -6,44 +6,27 @@
 // --- MRT-6 (Dhaka Metro Rail) Stations ---
 export const mrtStations = [
   { id: 1, name: "Uttara North", coords: [23.8759, 90.3795], zone: "N", firstTrain: "06:00", lastTrain: "22:00", nearbyBus: ["Uttara-Motijheel", "Uttara-Gulshan"] },
-  { id: 2, name: "Uttara Centre", coords: [23.8649, 90.3835], zone: "N", firstTrain: "06:02", lastTrain: "22:02", nearbyBus: ["Uttara-Motijheel"] },
+  { id: 2, name: "Uttara Centre", scheduleKey: "Uttara Center", coords: [23.8649, 90.3835], zone: "N", firstTrain: "06:02", lastTrain: "22:02", nearbyBus: ["Uttara-Motijheel"] },
   { id: 3, name: "Uttara South", coords: [23.8531, 90.3867], zone: "N", firstTrain: "06:04", lastTrain: "22:04", nearbyBus: ["Airport Road-Farmgate"] },
   { id: 4, name: "Pallabi", coords: [23.8369, 90.3737], zone: "N", firstTrain: "06:07", lastTrain: "22:07", nearbyBus: ["Mirpur-Farmgate", "Pallabi-Gulshan"] },
   { id: 5, name: "Mirpur 11", coords: [23.8269, 90.3657], zone: "N", firstTrain: "06:10", lastTrain: "22:10", nearbyBus: ["Mirpur 11-Motijheel"] },
   { id: 6, name: "Mirpur 10", coords: [23.8069, 90.3687], zone: "N", firstTrain: "06:12", lastTrain: "22:12", nearbyBus: ["Mirpur 10-Farmgate", "Mirpur 10-Gulshan"] },
   { id: 7, name: "Kazipara", coords: [23.7959, 90.3735], zone: "N", firstTrain: "06:15", lastTrain: "22:15", nearbyBus: ["Kazipara-Farmgate"] },
-  { id: 8, name: "Shewrapara", coords: [23.7889, 90.3791], zone: "N", firstTrain: "06:17", lastTrain: "22:17", nearbyBus: ["Shewrapara-Farmgate"] },
-  { id: 9, name: "Agargaon", coords: [23.7789, 90.3831], zone: "S", firstTrain: "06:20", lastTrain: "22:20", nearbyBus: ["Agargaon-Gulshan", "Agargaon-Motijheel"] },
+  { id: 8, name: "Shewrapara", scheduleKey: "Sewrapara", coords: [23.7889, 90.3791], zone: "N", firstTrain: "06:17", lastTrain: "22:17", nearbyBus: ["Shewrapara-Farmgate"] },
+  { id: 9, name: "Agargaon", scheduleKey: "Agargoan", coords: [23.7789, 90.3831], zone: "S", firstTrain: "06:20", lastTrain: "22:20", nearbyBus: ["Agargaon-Gulshan", "Agargaon-Motijheel"] },
   { id: 10, name: "Bijoy Sarani", coords: [23.7681, 90.3895], zone: "S", firstTrain: "06:22", lastTrain: "22:22", nearbyBus: ["Bijoy Sarani-Gulshan"] },
   { id: 11, name: "Farmgate", coords: [23.7562, 90.3896], zone: "S", firstTrain: "06:25", lastTrain: "22:25", nearbyBus: ["Farmgate-Motijheel", "Farmgate-Dhanmondi"] },
-  { id: 12, name: "Kawran Bazar", coords: [23.7505, 90.3930], zone: "S", firstTrain: "06:27", lastTrain: "22:27", nearbyBus: ["Kawran Bazar-Motijheel"] },
+  { id: 12, name: "Kawran Bazar", scheduleKey: "Karwan Bazar", coords: [23.7505, 90.3930], zone: "S", firstTrain: "06:27", lastTrain: "22:27", nearbyBus: ["Kawran Bazar-Motijheel"] },
   { id: 13, name: "Shahbagh", coords: [23.7385, 90.3965], zone: "S", firstTrain: "06:30", lastTrain: "22:30", nearbyBus: ["Shahbagh-Gulshan", "Shahbagh-Dhanmondi"] },
   { id: 14, name: "Dhaka University", coords: [23.7322, 90.3985], zone: "S", firstTrain: "06:32", lastTrain: "22:32", nearbyBus: ["DU-Motijheel"] },
   { id: 15, name: "Bangladesh Secretariat", coords: [23.7269, 90.4027], zone: "S", firstTrain: "06:35", lastTrain: "22:35", nearbyBus: ["Secretariat-Sadarghat"] },
   { id: 16, name: "Motijheel", coords: [23.7257, 90.4188], zone: "S", firstTrain: "06:37", lastTrain: "22:37", nearbyBus: ["Motijheel-Sadarghat", "Motijheel-Dhanmondi"] },
-  { id: 17, name: "Kamalapur", coords: [23.7305, 90.4262], zone: "S", firstTrain: "06:40", lastTrain: "22:40", nearbyBus: ["Kamalapur-Gulistan", "Kamalapur-Airport"] },
+  { id: 17, name: "Kamalapur", coords: [23.7305, 90.4262], zone: "S", operational: false, nearbyBus: ["Kamalapur-Gulistan", "Kamalapur-Airport"] },
 ];
 
-export const mrtLine = mrtStations.map(s => s.coords);
+export const mrtLine = mrtStations.filter(s => s.operational !== false).map(s => s.coords);
 
-// --- Real Dhaka Bus Routes ---
-export const busRoutes = [
-  { id: 1, name: "Mirpur 1 to Motijheel", number: "B-09", operator: "BRTC", from: "Mirpur 1", to: "Motijheel", via: "Farmgate, Shahbagh", frequency: "10-15 min", fare: "Tk 20-35", stops: ["Mirpur 1","Mirpur 10","Farmgate","Shahbagh","Motijheel"] },
-  { id: 2, name: "Uttara to Motijheel", number: "A-01", operator: "Dhaka City Bus", from: "Uttara", to: "Motijheel", via: "Airport, Mohakhali, Gulshan", frequency: "8-12 min", fare: "Tk 30-50", stops: ["Uttara","Airport","Banani","Gulshan","Motijheel"] },
-  { id: 3, name: "Mirpur 10 to Gulshan", number: "C-15", operator: "Private", from: "Mirpur 10", to: "Gulshan 2", via: "Kazipara, Mohakhali", frequency: "12-20 min", fare: "Tk 25-40", stops: ["Mirpur 10","Kazipara","Mohakhali","Gulshan 2"] },
-  { id: 4, name: "Dhanmondi to Motijheel", number: "D-22", operator: "Private", from: "Dhanmondi 27", to: "Motijheel", via: "Nilkhet, Shahbagh", frequency: "10-15 min", fare: "Tk 15-25", stops: ["Dhanmondi 27","Nilkhet","Shahbagh","Motijheel"] },
-  { id: 5, name: "Gazipur to Motijheel", number: "B-12", operator: "BRTC", from: "Gazipur", to: "Motijheel", via: "Tongi, Mirpur, Farmgate", frequency: "20-30 min", fare: "Tk 45-70", stops: ["Gazipur","Tongi","Mirpur","Farmgate","Motijheel"] },
-  { id: 6, name: "Uttara to Gulshan", number: "A-05", operator: "Dhaka City Bus", from: "Uttara", to: "Gulshan 2", via: "Airport Road, Banani", frequency: "10-15 min", fare: "Tk 20-30", stops: ["Uttara","Airport","Banani","Gulshan 2"] },
-  { id: 7, name: "Sadarghat to Mirpur", number: "E-03", operator: "BRTC", from: "Sadarghat", to: "Mirpur 10", via: "Gulistan, Farmgate", frequency: "15-25 min", fare: "Tk 25-40", stops: ["Sadarghat","Gulistan","Farmgate","Mirpur 10"] },
-  { id: 8, name: "Rampura to Farmgate", number: "F-11", operator: "Private", from: "Rampura", to: "Farmgate", via: "Malibagh, Shahbagh", frequency: "10-18 min", fare: "Tk 15-25", stops: ["Rampura","Malibagh","Shahbagh","Farmgate"] },
-  { id: 9, name: "Nawabpur to Agargaon", number: "G-07", operator: "Private", from: "Nawabpur", to: "Agargaon", via: "Sadarghat, Farmgate", frequency: "12-20 min", fare: "Tk 20-35", stops: ["Nawabpur","Sadarghat","Farmgate","Agargaon"] },
-  { id: 10, name: "Khilgaon to Farmgate", number: "H-18", operator: "Private", from: "Khilgaon", to: "Farmgate", via: "Malibagh, Shahbagh", frequency: "10-15 min", fare: "Tk 15-25", stops: ["Khilgaon","Malibagh","Shahbagh","Farmgate"] },
-  { id: 11, name: "Demra to Motijheel", number: "I-04", operator: "BRTC", from: "Demra", to: "Motijheel", via: "Jatrabari, Gulistan", frequency: "20-30 min", fare: "Tk 25-40", stops: ["Demra","Jatrabari","Gulistan","Motijheel"] },
-  { id: 12, name: "Mirpur 14 to Shahbagh", number: "J-09", operator: "Private", from: "Mirpur 14", to: "Shahbagh", via: "Mirpur 10, Farmgate", frequency: "12-18 min", fare: "Tk 20-35", stops: ["Mirpur 14","Mirpur 10","Farmgate","Shahbagh"] },
-  { id: 13, name: "Narayanganj to Motijheel", number: "K-01", operator: "BRTC", from: "Narayanganj", to: "Motijheel", via: "Jatrabari", frequency: "15-25 min", fare: "Tk 40-60", stops: ["Narayanganj","Jatrabari","Motijheel"] },
-  { id: 14, name: "Azimpur to Mohakhali", number: "L-07", operator: "Private", from: "Azimpur", to: "Mohakhali", via: "Nilkhet, Shahbagh, Farmgate", frequency: "10-15 min", fare: "Tk 20-30", stops: ["Azimpur","Nilkhet","Shahbagh","Farmgate","Mohakhali"] },
-  { id: 15, name: "Banasree to Farmgate", number: "M-14", operator: "Private", from: "Banasree", to: "Farmgate", via: "Rampura, Malibagh", frequency: "15-20 min", fare: "Tk 20-30", stops: ["Banasree","Rampura","Malibagh","Shahbagh","Farmgate"] },
-];
+// Bus route search uses the maintained public snapshot in dhakaBusRoutes.js.
 
 // --- Parking Locations ---
 export const parkingLocations = [
@@ -191,7 +174,7 @@ export const congestionPatterns = {
 
 // --- Official Fare Rates ---
 export const fareRates = {
-  cng: { base: 40, perKm: 12 },
+  cng: { base: 40, includedKm: 2, perKm: 12, waitingPerMin: 2 },
   rickshaw: { base: 20, perKm: 10 },
   bus: { flat: 15, perKm: 2 },
   uber: { base: 50, perKm: 18 },

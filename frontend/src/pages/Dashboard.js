@@ -18,12 +18,15 @@ const Dashboard = () => {
   const [data, setData] = useState(initialState);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState('');
-  const canManage = ['Admin', 'Authority'].includes(user?.role);
+  const canUpdateStatus = ['Admin', 'Authority'].includes(user?.role);
+  const canApprove = user?.role === 'Admin';
+  const canDelete = user?.role === 'Admin';
+  const canReport = ['Commuter', 'Driver'].includes(user?.role);
 
   const loadData = () => {
     Promise.allSettled([
       api.get('/summary'),
-      api.get('/incidents?limit=6'),
+      api.get(canApprove ? '/incidents?limit=50&moderation=all' : '/incidents?limit=20'),
       api.get('/vehicles?limit=6'),
       api.get('/alerts?active=true'),
       api.get('/parking'),
@@ -65,6 +68,16 @@ const Dashboard = () => {
     }
   };
 
+  const handleApproveIncident = async (id) => {
+    try {
+      setActionError('');
+      await api.patch(`/incidents/${id}/approve`);
+      loadData();
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Unable to approve the incident.');
+    }
+  };
+
   const summary = data.summary || {
     incidents: data.incidents.length,
     vehicles: data.vehicles.length,
@@ -89,17 +102,24 @@ const Dashboard = () => {
       </div>
 
       {actionError && <div className="message error">{actionError}</div>}
-      {!canManage && (
+      {!canUpdateStatus && (
         <div className="message" style={{ marginBottom: '18px' }}>
-          Hello {user?.name || 'there'}! You are logged in as a {user?.role || 'Commuter'}. You can submit road problem reports and view all updates. Road status moderation (resolving/updating reports) is managed by Dhaka Traffic Authorities.
+          Hello {user?.name || 'there'}! You are logged in as a {user?.role || 'Commuter'}. You can submit road problem reports and track admin approval from My Reported Incidents.
+        </div>
+      )}
+      {canApprove && (
+        <div className="message" style={{ marginBottom: '18px' }}>
+          Admin moderation is active. Pending reports remain hidden from the public incident map until you approve them. Only admins can approve or delete reports.
         </div>
       )}
 
       {/* Quick Actions */}
       <div className="quick-actions animate-in animate-in-delay-1">
-        <Link to="/report-incident" className="quick-action-btn">
-          <span className="qa-icon">⚠️</span> Report Problem
-        </Link>
+        {canReport && (
+          <Link to="/report-incident" className="quick-action-btn">
+            <span className="qa-icon">⚠️</span> Report Problem
+          </Link>
+        )}
         <Link to="/live-map" className="quick-action-btn">
           <span className="qa-icon">🗺️</span> Show Live Map
         </Link>
@@ -188,8 +208,10 @@ const Dashboard = () => {
               <th>Title</th>
               <th>Type</th>
               <th>Severity</th>
+              <th>Approval</th>
               <th>Status</th>
               <th>Location</th>
+              <th>Reporter</th>
               <th style={{ width: '280px' }}>Actions</th>
             </tr>
           </thead>
@@ -204,11 +226,17 @@ const Dashboard = () => {
                   </span>
                 </td>
                 <td>
+                  <span className={`badge ${incident.approvalStatus === 'Pending' ? 'warning' : 'success'}`}>
+                    {incident.approvalStatus || 'Approved'}
+                  </span>
+                </td>
+                <td>
                   <span className="badge" style={{ background: 'rgba(255, 255, 255, 0.05)', color: '#fff' }}>
                     {incident.status}
                   </span>
                 </td>
                 <td>{incident.locationName}</td>
+                <td>{incident.reportedBy?.name || 'Community'}<br /><small>{incident.reportedBy?.role || 'Reporter'}</small></td>
                 <td>
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     <Link
@@ -219,7 +247,17 @@ const Dashboard = () => {
                     >
                       📍 Locate
                     </Link>
-                    {canManage && incident.status !== 'Resolved' && (
+                    {canApprove && incident.approvalStatus === 'Pending' && (
+                      <button
+                        type="button"
+                        onClick={() => handleApproveIncident(incident._id)}
+                        className="badge success"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        ✓ Approve
+                      </button>
+                    )}
+                    {canUpdateStatus && incident.status !== 'Resolved' && (
                       <button
                         type="button"
                         onClick={() => handleUpdateStatus(incident._id, 'Resolved')}
@@ -229,7 +267,7 @@ const Dashboard = () => {
                         ✓ Resolve
                       </button>
                     )}
-                    {canManage && incident.status === 'Open' && (
+                    {canUpdateStatus && incident.status === 'Open' && (
                       <button
                         type="button"
                         onClick={() => handleUpdateStatus(incident._id, 'Investigating')}
@@ -239,7 +277,7 @@ const Dashboard = () => {
                         🔍 Investigate
                       </button>
                     )}
-                    {canManage && (
+                    {canDelete && (
                       <button
                         type="button"
                         onClick={() => handleDeleteIncident(incident._id)}
@@ -265,8 +303,16 @@ const Dashboard = () => {
             <div className="imc-meta">
               <span>{incident.type}</span>
               <span>{incident.locationName}</span>
+              <span>{incident.reportedBy?.role || 'Community'}</span>
+              <span className={`badge ${incident.approvalStatus === 'Pending' ? 'warning' : 'success'}`}>{incident.approvalStatus || 'Approved'}</span>
               <span className="badge" style={{background:'rgba(255,255,255,0.05)',color:'#fff'}}>{incident.status}</span>
             </div>
+            {canApprove && (
+              <div className="imc-actions">
+                {incident.approvalStatus === 'Pending' && <button type="button" className="badge success" onClick={() => handleApproveIncident(incident._id)}>✓ Approve</button>}
+                <button type="button" className="badge danger" onClick={() => handleDeleteIncident(incident._id)}>✕ Delete</button>
+              </div>
+            )}
           </div>
         ))}
       </div>

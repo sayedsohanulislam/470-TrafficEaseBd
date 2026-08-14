@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const seedDatabase = async () => {
   const Incident = require('../models/Incident');
+  const User = require('../models/User');
   const Vehicle = require('../models/Vehicle');
   const Alert = require('../models/Alert');
   const ParkingLot = require('../models/ParkingLot');
@@ -22,7 +23,33 @@ const seedDatabase = async () => {
 
   for (const [Model, items] of seeds) {
     if ((await Model.countDocuments()) === 0) {
-      await Model.insertMany(items.map(({ _id, ...rest }) => rest));
+      const seedItems = items.map(({ _id, ...rest }) => {
+        if (Model.modelName !== 'Incident') return rest;
+        const { coordinates, reportedBy, approvedBy, ...incident } = rest;
+        return incident;
+      });
+      await Model.insertMany(seedItems);
+    }
+  }
+
+  // Existing incidents predate the approval workflow and were already public.
+  await Incident.updateMany(
+    { approvalStatus: { $exists: false } },
+    { $set: { approvalStatus: 'Approved' } }
+  );
+
+  // Keep demo credentials local-only; production admins must be provisioned explicitly.
+  if (process.env.NODE_ENV !== 'production') {
+    const adminEmail = process.env.DEMO_ADMIN_EMAIL || 'admin@trafficease.com';
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    if (!existingAdmin) {
+      await User.create({
+        name: 'TrafficEase Administrator',
+        email: adminEmail,
+        phone: '01700000000',
+        password: process.env.DEMO_ADMIN_PASSWORD || 'password123',
+        role: 'Admin'
+      });
     }
   }
 };

@@ -17,6 +17,11 @@ const incidentSchema = new mongoose.Schema({
     enum: ['Open', 'Investigating', 'Resolved', 'Rejected'],
     default: 'Open'
   },
+  approvalStatus: {
+    type: String,
+    enum: ['Pending', 'Approved'],
+    default: 'Pending'
+  },
   locationName: { type: String, required: true, trim: true },
   location: {
     type: { type: String, default: 'Point' },
@@ -24,10 +29,13 @@ const incidentSchema = new mongoose.Schema({
   },
   description: { type: String, trim: true },
   reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  assignedAuthority: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  assignedAuthority: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  approvedAt: { type: Date }
 }, { timestamps: true });
 
 incidentSchema.index({ location: '2dsphere' });
 incidentSchema.index({ status: 1, severity: 1, createdAt: -1 });
+incidentSchema.index({ approvalStatus: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Incident', incidentSchema);

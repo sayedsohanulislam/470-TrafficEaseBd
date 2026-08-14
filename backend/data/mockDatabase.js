@@ -8,10 +8,12 @@ let incidents = [
     type: 'Flooding',
     severity: 'Critical',
     status: 'Investigating',
+    approvalStatus: 'Approved',
     locationName: 'Farmgate Near Footbridge',
     location: { type: 'Point', coordinates: [90.3897, 23.7561] },
     coordinates: [90.3897, 23.7561],
     description: 'Monsoon rainfall has caused knee-deep water near Farmgate, causing heavy bus congestion.',
+    reportedBy: { _id: 'mock-reporter-1', name: 'Rahim Ahmed', role: 'Driver' },
     createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString()
   },
   {
@@ -20,10 +22,12 @@ let incidents = [
     type: 'Congestion',
     severity: 'High',
     status: 'Open',
+    approvalStatus: 'Approved',
     locationName: 'Gulshan 2 to Banani Road',
     location: { type: 'Point', coordinates: [90.4003, 23.7937] },
     coordinates: [90.4003, 23.7937],
     description: 'Double-decker BRTC bus stalled near Gulshan 2 circle, blocking one major lane.',
+    reportedBy: { _id: 'mock-reporter-2', name: 'Nusrat Jahan', role: 'Commuter' },
     createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString()
   },
   {
@@ -32,10 +36,12 @@ let incidents = [
     type: 'Signal Failure',
     severity: 'Medium',
     status: 'Open',
+    approvalStatus: 'Approved',
     locationName: 'Shahbagh Circle',
     location: { type: 'Point', coordinates: [90.3951, 23.7382] },
     coordinates: [90.3951, 23.7382],
     description: 'Traffic lights are currently flashing yellow, manual police routing in place.',
+    reportedBy: { _id: 'mock-reporter-3', name: 'Karim Uddin', role: 'Driver' },
     createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString()
   }
 ];
@@ -70,7 +76,8 @@ let transit = [
 ];
 
 let users = [
-  { _id: 'mock-user-1', name: 'Sayed Sohanul Islam', email: 'sohan@trafficease.com', phone: '01711122233', role: 'Authority', password: '$2a$10$U52k8sH07klyK5d35aXj0u7tA8e8uD3N5H.y1N.F1pL/t.b6x8g2q' } // password123 (hashed)
+  { _id: 'mock-user-1', name: 'Sayed Sohanul Islam', email: 'sohan@trafficease.com', phone: '01711122233', role: 'Authority', password: '$2a$10$U52k8sH07klyK5d35aXj0u7tA8e8uD3N5H.y1N.F1pL/t.b6x8g2q' },
+  { _id: 'mock-user-admin', name: 'TrafficEase Administrator', email: 'admin@trafficease.com', phone: '01700000000', role: 'Admin', password: '$2a$10$U52k8sH07klyK5d35aXj0u7tA8e8uD3N5H.y1N.F1pL/t.b6x8g2q' } // password123 (hashed)
 ];
 
 let operations = [
@@ -81,7 +88,7 @@ let operations = [
 // Helper to get summaries
 const getSummaryData = () => {
   return {
-    incidents: incidents.filter(i => i.status !== 'Resolved').length,
+    incidents: incidents.filter(i => i.approvalStatus === 'Approved' && i.status !== 'Resolved').length,
     vehicles: vehicles.length,
     activeAlerts: alerts.filter(a => a.active).length,
     parkingSpaces: parking.reduce((sum, p) => sum + p.availableSpaces, 0),

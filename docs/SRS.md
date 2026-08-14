@@ -16,7 +16,7 @@
 | **22201631** | Md. Mushroor Muttakin Khan | Lead Backend Architect, Auth Security, MongoDB Schemas, & Controller Logic |
 | **22201940** | Raisha Tasnim Khan | Frontend Core UI Designer, Operations Panel, Data Bindings, & Alert Broadcasts |
 | **22341036** | Sayed Sohanul Islam | GIS Engineer, Google Maps Live Traffic Overlay, Geocoding Engine, & Click-to-Pin System |
-| **23301060** | Maisha Maliha Nisa | Command Workspace Lead, 30-Feature Operations Simulator, & Session Audit Logger |
+| **23301060** | Maisha Maliha Nisa | Citizen Service UX, Operations Support, & Session Audit Logger |
 
 ---
 
@@ -166,7 +166,7 @@ classDiagram
 
 ## 5. Functional Requirements (Core Features)
 
-Authentication and registration are platform prerequisites and are **not** counted as features. The authoritative requirement set is the 30-item [Feature Traceability Matrix](FEATURE_TRACEABILITY.md), which matches the README, `/api/live-traffic/features`, and the application workspace exactly. Each `FR-01` through `FR-30` entry defines an observable outcome, implementation path, persistence boundary, verification method, and documented lead.
+Authentication and registration are platform prerequisites and are **not** counted as features. The authoritative user-facing requirement set is the 20-item [Citizen-Service Traceability Matrix](CITIZEN_SERVICE_TRACEABILITY.md). A service is counted only when a commuter can perform an action and receive an observable result or next action. The former 30-item control-room catalogue is retained only as a [Supporting Technical Capability Matrix](FEATURE_TRACEABILITY.md).
 
 ### 5.1 Roles and authorization
 
@@ -177,47 +177,21 @@ Authentication and registration are platform prerequisites and are **not** count
 
 Public registration is limited to Commuter and Driver roles. Authority and Admin roles are provisioned outside public registration.
 
-### 5.2 Supporting implementation tasks by contribution area
+### 5.2 User-completable citizen services
 
-The capabilities below support the canonical requirements and demonstrate individual implementation work. They are not a second feature-counting scheme.
+The service hub organizes 20 practical tasks into five everyday needs. Each group contains four services so users can understand the catalogue without technical terminology.
 
-### Group A: Commuter & Navigation Features (Sayed Sohanul Islam)
-1. **Google Maps Traffic Overlay:** Dynamic integration of real-time road pressure overlays showing green/orange/red lines directly in Leaflet.
-2. **Nominatim Address Search:** Asynchronous address lookup allowing users to type any landmark in Dhaka and pan the map instantly.
-3. **Location Marker Dropper:** Automatically drops search markers with popups at searched destinations.
-4. **Click-to-Pin Incident Picker:** Let users select coordinate markers directly on the map instead of entering coordinates manually.
-5. **Distance ETA Multimodal Calculator:** Compares estimated travel duration for Car, MRT, and Bus modes based on distance sliders.
-6. **Commuter Route Recommendation:** Renders recommended bypass pathways based on origin-destination dropdown selections.
-7. **Weather Risk Evaluation:** Simulates rain intensity changes to calculate live road safety warning scores.
-8. **Flood Sensor Simulator:** Adjusts water accumulation levels (in inches) to issue clearance warnings for different vehicle classes.
+1. **Plan a journey:** route planner, MRT-6 guide, bus finder, and best departure time.
+2. **Pay the right amount:** fare checker, parking finder, CNG/rickshaw stand finder, and journey-cost comparison.
+3. **Stay safe on the road:** incident map, road-problem reporting, emergency contacts, and waterlogging guidance.
+4. **Find something nearby:** fuel/CNG stations, hospitals, active school zones, and traffic-police divisions.
+5. **Manage daily travel:** road closures, personal report tracking, saved daily commute, and official alerts.
 
-### Group B: Central Operations & Dashboard (Raisha Tasnim Khan)
-9. **Real-time Stats Overview Grid:** Dynamic tiles tracking total active incidents, alert counts, and average network speed.
-10. **Operations Audit Log Feeds:** Live list tracking municipal actions, dispatches, and alert events.
-11. **Urgent Broadcast Alerts list:** Displays active road closures and emergency weather bulletins.
-12. **Telemetry Corridor Load List:** Visual bar indicators representing road delay percentages on major highways.
-13. **Active Patrol Fleet Monitor:** Lists tracked ambulances, police units, and towing vehicles.
-14. **Quick dispatch action log:** Renders assigned tasks and responding officers from command desks.
-15. **Multilingual Advisory Notice:** Localized warning banners (English/Bangla support) based on air quality metrics.
+For the acceptance action, output, interface, and implementation evidence of every service, see [CITIZEN_SERVICE_TRACEABILITY.md](CITIZEN_SERVICE_TRACEABILITY.md).
 
-### Group C: Authority Control & Dispatch (Md. Mushroor Muttakin Khan)
-16. **Incident Telemetry Submission:** Allows authorities and authenticated users to file incidents directly.
-17. **Incident Status Modifier:** Click-to-resolve or investigate reports from the central table.
-18. **Incident Removal Handler:** Operator capability to dismiss false reports.
-19. **Location Focus Anchor:** Click-to-locate maps linking directly to selected incident coordinate indices.
-20. **Municipal Alert Broadcaster:** Push alerts directly into the system warning queues.
-21. **Central Response Squad Dispatcher:** Form to select unit classes (Police, Towing, WASA pumps) and dispatch them.
-22. **Interactive Parking Reserve System:** Real-time parking slot grid allocator. Commuters click slots to reserve/free spaces.
+### 5.3 Supporting authority and technical capabilities
 
-### Group D: Signal & Smart Transit Systems (Maisha Maliha Nisa)
-23. **Interactive Signal Light Cycles:** Simulates traffic light countdowns and active phase indicators.
-24. **Manual Signal Override:** Toggles North-South / East-West phase priorities manually.
-25. **Adaptive Phase Timer Calculator:** Allocates optimal green-light seconds based on intersection congestion loads.
-26. **Signal Failure Simulator:** Toggles mock intersection controllers to test warning dispatch feeds.
-27. **Emergency Vehicle Priority Routing:** Swaps signals to Green Cascade layout when emergency vehicles approach.
-28. **School Zone Safe-Speed Lock:** Limits speed parameters to 20 km/h in target zones.
-29. **Feeder Metro Connector Board:** Renders subway feeder routes and arrival schedules.
-30. **Public Transit Capacity Estimator:** Sliders to adjust passenger density and warn against transit crowding.
+Signal management, incident verification, dispatch, audit logging, congestion calculations, and database fallbacks remain part of the system architecture. They support the citizen services or protected authority dashboard but are not presented to commuters as simulated features. Their technical traceability is retained in [FEATURE_TRACEABILITY.md](FEATURE_TRACEABILITY.md).
 
 ---
 
@@ -228,7 +202,7 @@ The capabilities below support the canonical requirements and demonstrate indivi
 * **Resiliency:** Authentication, incidents, vehicles, alerts, parking, signals, transit, summary data, and operation logs have in-memory fallbacks when MongoDB is unavailable. Fallback data is demonstration-only and does not survive a process restart.
 * **Maintainability:** Express app creation, database bootstrap, controllers, routes, services, models, configuration, tests, and React views are separated into reusable modules.
 * **External Services:** Leaflet renders maps; Nominatim performs address search; OSRM calculates route geometry. The project does not claim ownership or guaranteed availability of those services.
-* **Ethical Scope:** Simulator modules model classroom traffic-management decisions and do not claim connection to live government traffic-control hardware.
+* **Ethical Scope:** Demonstration data and authority models do not claim connection to live government traffic-control hardware. The public interface labels fallback/sample data instead of presenting it as verified live government data.
 
 ---
 
@@ -236,11 +210,11 @@ The capabilities below support the canonical requirements and demonstrate indivi
 
 The repository contains repeatable verification commands:
 
-* **Backend automated tests:** `cd backend && npm test` validates authentication policy, feature-count invariants, calculations, and offline fallback behavior.
-* **Frontend automated tests:** `cd frontend && npm test -- --watchAll=false` validates reusable traffic calculations.
+* **Backend automated tests:** `cd backend && npm test` validates authentication policy, operational capability invariants, calculations, and offline fallback behavior.
+* **Frontend automated tests:** `cd frontend && npm test -- --watchAll=false` validates reusable traffic calculations plus the 20-service catalogue, grouping, localization, search, and deep links.
 * **Frontend production build:** `cd frontend && npm run build` verifies optimized compilation.
 * **Runtime smoke test:** Core summary, incident, vehicle, alert, parking, signal, transit, live-traffic, feature, and operation routes are checked against a running API.
-* **Manual acceptance:** Every canonical requirement has an observable outcome and implementation evidence in `FEATURE_TRACEABILITY.md`.
+* **Manual acceptance:** Every canonical citizen service has an observable user action and result in `CITIZEN_SERVICE_TRACEABILITY.md`.
 
 ---
 

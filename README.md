@@ -12,7 +12,7 @@ TrafficEase BD: Intelligent Multi-Modal Urban Mobility and Traffic Management Pl
 
 ## Implemented Modules
 - JWT login and registration with commuter, driver, admin, and authority roles
-- Live traffic command center with congestion, speed, queue, signal, camera, transit, weather, dispatch, and route recommendation panels
+- Bilingual, commuter-first traffic page with plain-language leave-now guidance and road-by-road delays
 - Live traffic map with incident markers, vehicle markers, and colored corridor pressure overlays
 - Incident reporting and incident status management
 - Vehicle registration, fleet status, and vehicle statistics
@@ -21,41 +21,31 @@ TrafficEase BD: Intelligent Multi-Modal Urban Mobility and Traffic Management Pl
 - Traffic signal monitoring
 - Public transit route management
 - Operations summary dashboard
-- 30-feature platform module showcase
+- 20 task-based citizen services with search, five everyday-need groups, favorites, and direct deep links
 
-## 30 Feature Modules
-1. Live congestion index
-2. Corridor speed monitor
-3. Queue length estimator
-4. Signal phase tracking
-5. Adaptive signal timing
-6. Signal failure alerts
-7. Incident reporting
-8. Incident verification queue
-9. Emergency vehicle priority
-10. School-zone safety mode
-11. Weather impact scoring
-12. Flood-prone road alerts
-13. Air quality mobility note
-14. Bus route status
-15. Metro connection status
-16. Transit delay prediction
-17. Crowding level monitor
-18. Parking availability
-19. Parking demand forecast
-20. Ride-share pickup zones
-21. CNG stand availability
-22. Pedestrian crossing load
-23. Road work scheduling
-24. Event traffic plan
-25. Route recommendation
-26. ETA comparison
-27. Hotspot heat ranking
-28. Authority dispatch board
-29. Public alert broadcast
-30. Audit-ready activity log
+## 20 User-Completable Services
+1. Plan a road route
+2. Check CNG and rickshaw fares
+3. See reported road problems on a map
+4. Submit a trackable road-problem report
+5. Use the MRT-6 station guide
+6. Find a bus by origin and destination
+7. Find parking and check its rate and hours
+8. Call the correct emergency service
+9. Avoid waterlogged roads using alternate-road guidance
+10. Find fuel or CNG stations
+11. Choose a better departure time
+12. Find a hospital and emergency phone number
+13. Check currently active school zones
+14. Find a CNG or rickshaw stand
+15. Check road closures and detours
+16. Compare journey costs across transport modes
+17. Find and call the responsible traffic-police division
+18. Track submitted incident reports
+19. Save a daily home-to-work commute
+20. Read official traffic alerts
 
-The canonical requirement-to-code-to-owner mapping is maintained in `docs/FEATURE_TRACEABILITY.md`.
+Each service produces an observable result or next action—navigate, calculate, call, report, save, filter, or track. The canonical user-service-to-code mapping is maintained in `docs/CITIZEN_SERVICE_TRACEABILITY.md`. The older `docs/FEATURE_TRACEABILITY.md` now documents supporting technical and authority capabilities rather than the commuter-facing feature count.
 
 ## Setup Instructions
 
@@ -109,7 +99,9 @@ REACT_APP_API_URL=http://localhost:5000/api
 - `GET, POST /api/operations` (Authority/Admin)
 
 ## Notes
-- Login/Registration is mandatory but is NOT part of the 30-feature count.
+- Login/Registration is a platform prerequisite and is not part of the 20-service count. Most commuter services work without an account; tracking personal reports requires login.
 - Public registration creates only Commuter or Driver accounts. Authority/Admin roles are provisioned separately.
+- Local demo admin: `admin@trafficease.com` / `password123` (development only). This account approves or deletes community incident reports.
+- The login screen also provides one-tap Commuter, Driver, Authority, and Admin demo sessions in local/demo mode.
 - MVC responsibilities are separated across `models`, `controllers`, `routes`, `services`, `config`, and React views.
 - Use GitHub and add faculty as collaborator.

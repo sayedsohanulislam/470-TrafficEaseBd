@@ -9,8 +9,8 @@ const defaultForm = {
   type: 'Congestion',
   severity: 'Medium',
   locationName: '',
-  latitude: '23.8103',
-  longitude: '90.4125',
+  latitude: '',
+  longitude: '',
   description: ''
 };
 
@@ -51,7 +51,7 @@ const MapController = ({ center }) => {
 };
 
 const ReportIncident = () => {
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [form, setForm] = useState(defaultForm);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -118,7 +118,7 @@ const ReportIncident = () => {
       setAddressLookup('');
       setMapCenter(dhakaCenter);
       setCurrentStep(1);
-      setMessage('✅ Report submitted! Thank you for helping Dhaka commuters. We will review it shortly.');
+      setMessage('✅ Report submitted for admin approval. You can track it from My Reported Incidents.');
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to submit this incident.');
     } finally {
@@ -126,7 +126,9 @@ const ReportIncident = () => {
     }
   };
 
-  const markerPosition = [Number(form.latitude), Number(form.longitude)];
+  const markerPosition = form.latitude && form.longitude
+    ? [Number(form.latitude), Number(form.longitude)]
+    : null;
 
   const canProceedStep1 = form.title && form.type && form.severity;
   const canProceedStep2 = form.locationName && form.latitude && form.longitude;
@@ -142,7 +144,7 @@ const ReportIncident = () => {
 
       <h1 style={{ fontSize: '1.8rem', marginBottom: '8px' }}>Report Incident</h1>
       <p style={{ marginBottom: '24px' }}>
-        {isAuthenticated ? 'Your report will be attached to your account.' : 'You can report now, then login later to track updates.'}
+        Signed in as {user?.role}. Pin the exact incident location; an admin will review the report before it appears publicly.
       </p>
 
       {/* Step Indicator */}
@@ -271,9 +273,9 @@ const ReportIncident = () => {
                 <MapContainer center={mapCenter} zoom={13} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
                   <MapController center={mapCenter} />
                   <TileLayer
-                    attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
-                    url="https://{s}.google.com/vt/lyrs=m,traffic&hl=en&x={x}&y={y}&z={z}"
-                    subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    subdomains={['a', 'b', 'c']}
                   />
                   <LocationPicker onLocationSelected={handleLocationPicked} position={markerPosition} />
                 </MapContainer>

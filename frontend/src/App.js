@@ -27,7 +27,7 @@ function App() {
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/live-traffic" element={<LiveTraffic />} />
               <Route path="/live-map" element={<LiveMap />} />
-              <Route path="/report-incident" element={<ReportIncident />} />
+              <Route path="/report-incident" element={<ProtectedRoute roles={['Commuter', 'Driver']}><ReportIncident /></ProtectedRoute>} />
               <Route path="/smart-hub" element={<SmartHub />} />
             </Routes>
           </main>

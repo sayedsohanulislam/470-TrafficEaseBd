@@ -21,7 +21,10 @@ exports.getSummary = async (req, res) => {
       signals,
       transitRoutes
     ] = await Promise.all([
-      Incident.countDocuments({ status: { $ne: 'Resolved' } }),
+      Incident.countDocuments({
+        status: { $ne: 'Resolved' },
+        $or: [{ approvalStatus: 'Approved' }, { approvalStatus: { $exists: false } }]
+      }),
       Vehicle.countDocuments(),
       Alert.countDocuments({ active: true }),
       ParkingLot.aggregate([{ $group: { _id: null, spaces: { $sum: '$availableSpaces' } } }]),
