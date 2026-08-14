@@ -160,16 +160,74 @@ const ToolPanel = ({ toolId, user, isAuthenticated, onClose }) => {
 };
 
 // ===================================================================
-// Feature 1: Route Planner
+// Feature 1: Route Planner Helpers & Component
 // ===================================================================
+const reverseGeocode = async (lat, lng) => {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16`, {
+      headers: { 'Accept-Language': 'en' }
+    });
+    const data = await res.json();
+    if (data && data.display_name) {
+      const parts = data.display_name.split(',');
+      return parts.slice(0, 3).join(',').trim();
+    }
+  } catch (error) {
+    console.error("Reverse geocoding error:", error);
+  }
+  return `Location at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+};
+
+const MapClickHandler = ({ onMapClick }) => {
+  useMapEvents({
+    click(e) {
+      onMapClick(e.latlng.lat, e.latlng.lng);
+    }
+  });
+  return null;
+};
+
+const formatOSRMStep = (step) => {
+  const name = step.name ? ` onto ${step.name}` : '';
+  const modifier = step.maneuver.modifier ? ` ${step.maneuver.modifier}` : '';
+  let instruction = '';
+
+  if (step.maneuver.type === 'depart') {
+    instruction = `Start journey ${step.name ? `on ${step.name}` : ''}`;
+  } else if (step.maneuver.type === 'arrive') {
+    instruction = 'Arrive at your destination';
+  } else if (step.maneuver.type === 'turn') {
+    instruction = `Turn${modifier}${name}`;
+  } else {
+    const typeLabel = step.maneuver.type.charAt(0).toUpperCase() + step.maneuver.type.slice(1);
+    instruction = `${typeLabel}${modifier}${name}`;
+  }
+
+  return {
+    instruction,
+    distance: Math.round(step.distance)
+  };
+};
+
 const RoutePlanner = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [fromCoords, setFromCoords] = useState(null);
+  const [toCoords, setToCoords] = useState(null);
+  const [fromLabel, setFromLabel] = useState('');
+  const [toLabel, setToLabel] = useState('');
   const [route, setRoute] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pickMode, setPickMode] = useState(null); // 'start', 'end', or null
 
-  const geocode = async (query) => {
+  const geocode = async (query, isStart) => {
+    if (isStart && fromCoords && query === fromLabel) {
+      return fromCoords;
+    }
+    if (!isStart && toCoords && query === toLabel) {
+      return toCoords;
+    }
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Dhaka, Bangladesh')}&limit=1`;
     const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
     const data = await res.json();
@@ -181,42 +239,142 @@ const RoutePlanner = () => {
     if (!from.trim() || !to.trim()) return;
     setLoading(true); setError(''); setRoute(null);
     try {
-      const [fromCoords, toCoords] = await Promise.all([geocode(from), geocode(to)]);
-      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords[1]},${fromCoords[0]};${toCoords[1]},${toCoords[0]}?overview=full&geometries=geojson`;
+      const [fCoords, tCoords] = await Promise.all([geocode(from, true), geocode(to, false)]);
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fCoords[1]},${fCoords[0]};${tCoords[1]},${tCoords[0]}?overview=full&geometries=geojson&steps=true`;
       const osrmRes = await fetch(osrmUrl);
       const osrmData = await osrmRes.json();
       if (osrmData.code !== 'Ok') throw new Error('Could not find a route.');
       const leg = osrmData.routes[0].legs[0];
       const geometry = osrmData.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-      setRoute({ fromCoords, toCoords, geometry, distanceKm: (leg.distance / 1000).toFixed(1), durationMin: Math.round(leg.duration / 60) });
+      const steps = (leg.steps || []).map(formatOSRMStep);
+      setRoute({
+        fromCoords: fCoords,
+        toCoords: tCoords,
+        geometry,
+        distanceKm: (leg.distance / 1000).toFixed(1),
+        durationMin: Math.round(leg.duration / 60),
+        steps
+      });
     } catch (e) { setError(e.message); } finally { setLoading(false); }
+  };
+
+  const handleMapClick = async (lat, lng) => {
+    if (!pickMode) return;
+    setLoading(true);
+    setError('');
+    try {
+      const label = await reverseGeocode(lat, lng);
+      if (pickMode === 'start') {
+        setFrom(label);
+        setFromLabel(label);
+        setFromCoords([lat, lng]);
+      } else if (pickMode === 'end') {
+        setTo(label);
+        setToLabel(label);
+        setToCoords([lat, lng]);
+      }
+      setPickMode(null);
+    } catch (err) {
+      setError('Could not identify the picked location.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div>
-      <div className="rp-form">
-        <input className="tool-input" placeholder="From (e.g. Mirpur 10)" value={from} onChange={e => setFrom(e.target.value)} />
-        <input className="tool-input" placeholder="To (e.g. Motijheel)" value={to} onChange={e => setTo(e.target.value)} />
-        <button className="button" onClick={handleSearch} disabled={loading}>{loading ? 'Searching...' : '🔍 Find Route'}</button>
+      <div className="rp-form" style={{ alignItems: 'end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--friendly-muted)', fontWeight: 'bold' }}>Starting point</span>
+            <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+              <input className="tool-input" placeholder="From (e.g. Mirpur 10)" value={from} onChange={e => setFrom(e.target.value)} />
+              <button
+                type="button"
+                className={`button ${pickMode === 'start' ? '' : 'secondary'}`}
+                style={{ height: '46px', width: '46px', minWidth: 'auto', padding: 0, fontSize: '1.1rem', background: pickMode === 'start' ? 'var(--primary)' : 'rgba(255,255,255,0.05)', border: '1px solid var(--friendly-border)' }}
+                title="Choose start point on map"
+                onClick={() => setPickMode(pickMode === 'start' ? null : 'start')}
+              >
+                📍
+              </button>
+            </div>
+          </label>
+        </div>
+
+        <span className="route-search-arrow" style={{ alignSelf: 'center', marginBottom: '12px', fontSize: '1.2rem', color: 'var(--primary)' }} aria-hidden="true">→</span>
+
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--friendly-muted)', fontWeight: 'bold' }}>Destination</span>
+            <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+              <input className="tool-input" placeholder="To (e.g. Motijheel)" value={to} onChange={e => setTo(e.target.value)} />
+              <button
+                type="button"
+                className={`button ${pickMode === 'end' ? '' : 'secondary'}`}
+                style={{ height: '46px', width: '46px', minWidth: 'auto', padding: 0, fontSize: '1.1rem', background: pickMode === 'end' ? 'var(--primary)' : 'rgba(255,255,255,0.05)', border: '1px solid var(--friendly-border)' }}
+                title="Choose destination on map"
+                onClick={() => setPickMode(pickMode === 'end' ? null : 'end')}
+              >
+                🎯
+              </button>
+            </div>
+          </label>
+        </div>
+
+        <button className="button" onClick={handleSearch} disabled={loading} style={{ height: '46px' }}>{loading ? 'Searching...' : '🔍 Find Route'}</button>
       </div>
+
+      {pickMode && (
+        <div className="plain-recommendation" style={{ background: 'rgba(251, 191, 36, 0.1)', borderLeft: '4px solid var(--primary)', margin: '10px 0', padding: '10px 14px', borderRadius: '8px' }}>
+          <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem' }}>📍 Map Pinning Active</span>
+          <strong style={{ color: '#fff', fontSize: '0.88rem' }}>Click anywhere on the map below to set your {pickMode === 'start' ? 'Starting Point' : 'Destination'}.</strong>
+        </div>
+      )}
+
       {error && <div className="tool-error">{error}</div>}
-      {route && (
+
+      {(route || fromCoords || toCoords) && (
         <>
-          <div className="route-stats">
-            <div className="route-stat"><span>Distance</span><strong>{route.distanceKm} km</strong></div>
-            <div className="route-stat"><span>Est. Time (Car)</span><strong>{route.durationMin} min</strong></div>
-            <div className="route-stat"><span>CNG Fare</span><strong>Tk {Math.round(fareRates.cng.base + route.distanceKm * fareRates.cng.perKm)}–{Math.round(fareRates.cng.base + route.distanceKm * fareRates.cng.perKm * 1.2)}</strong></div>
-            <div className="route-stat"><span>Bus Fare</span><strong>Tk {Math.max(15, Math.round(route.distanceKm * fareRates.bus.perKm + fareRates.bus.flat))}</strong></div>
-          </div>
+          {route && (
+            <div className="route-stats">
+              <div className="route-stat"><span>Distance</span><strong>{route.distanceKm} km</strong></div>
+              <div className="route-stat"><span>Est. Time (Car)</span><strong>{route.durationMin} min</strong></div>
+              <div className="route-stat"><span>CNG Fare</span><strong>Tk {Math.round(fareRates.cng.base + route.distanceKm * fareRates.cng.perKm)}–{Math.round(fareRates.cng.base + route.distanceKm * route.distanceKm * 1.2)}</strong></div>
+              <div className="route-stat"><span>Bus Fare</span><strong>Tk {Math.max(15, Math.round(route.distanceKm * fareRates.bus.perKm + fareRates.bus.flat))}</strong></div>
+            </div>
+          )}
           <div className="tool-map-wrap">
-            <MapContainer center={route.fromCoords} zoom={13} style={{ height: 380, width: '100%', borderRadius: 12 }} key={JSON.stringify(route.fromCoords)}>
+            <MapContainer center={route ? route.fromCoords : fromCoords || toCoords} zoom={13} style={{ height: 380, width: '100%', borderRadius: 12 }}>
               <TileLayer url={TILE_URL} subdomains={TILE_SUB} maxZoom={20} />
-              <MapFly center={route.fromCoords} />
-              <Polyline positions={route.geometry} pathOptions={{ color: '#4c8dff', weight: 5 }} />
-              <CircleMarker center={route.fromCoords} radius={10} pathOptions={{ color: '#2fbf71', fillColor: '#2fbf71', fillOpacity: 1 }}><Popup>Start: {from}</Popup></CircleMarker>
-              <CircleMarker center={route.toCoords} radius={10} pathOptions={{ color: '#f0525b', fillColor: '#f0525b', fillOpacity: 1 }}><Popup>End: {to}</Popup></CircleMarker>
+              <MapClickHandler onMapClick={handleMapClick} />
+              {route && <MapFly center={route.fromCoords} />}
+              {route && <Polyline positions={route.geometry} pathOptions={{ color: '#4c8dff', weight: 5 }} />}
+              {(route || fromCoords) && (
+                <CircleMarker center={route ? route.fromCoords : fromCoords} radius={10} pathOptions={{ color: '#2fbf71', fillColor: '#2fbf71', fillOpacity: 1 }}>
+                  <Popup>Start: {from}</Popup>
+                </CircleMarker>
+              )}
+              {(route || toCoords) && (
+                <CircleMarker center={route ? route.toCoords : toCoords} radius={10} pathOptions={{ color: '#f0525b', fillColor: '#f0525b', fillOpacity: 1 }}>
+                  <Popup>End: {to}</Popup>
+                </CircleMarker>
+              )}
             </MapContainer>
           </div>
+
+          {route && route.steps && route.steps.length > 0 && (
+            <div className="simple-directions" style={{ marginTop: '16px', background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--line)' }}>
+              <h3 style={{ fontSize: '1rem', color: '#fff', marginBottom: '12px', borderBottom: '1px solid var(--line)', paddingBottom: '6px' }}>📋 Step-by-Step Directions</h3>
+              <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {route.steps.map((step, idx) => (
+                  <li key={idx} style={{ fontSize: '0.86rem', color: '#eee' }}>
+                    <strong>{step.instruction}</strong> {step.distance > 0 && <span style={{ color: 'var(--friendly-muted)', fontSize: '0.78rem' }}>({step.distance} meters)</span>}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </>
       )}
     </div>
