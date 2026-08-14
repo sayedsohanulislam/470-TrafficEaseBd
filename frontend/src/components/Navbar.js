@@ -25,7 +25,6 @@ const Navbar = () => {
           <span>TrafficEase BD</span>
         </Link>
 
-        {/* Mobile Hamburger Toggle Button */}
         <button
           className={`nav-toggle ${menuOpen ? 'active' : ''}`}
           type="button"
@@ -38,12 +37,14 @@ const Navbar = () => {
         </button>
 
         <nav className={`nav-links ${menuOpen ? 'open' : ''}`} aria-label="Main navigation">
-          <NavLink className="nav-link" to="/" onClick={() => setMenuOpen(false)}>Home</NavLink>
-          <NavLink className="nav-link" to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</NavLink>
-          <NavLink className="nav-link" to="/live-traffic" onClick={() => setMenuOpen(false)}>Live Traffic</NavLink>
-          <NavLink className="nav-link" to="/live-map" onClick={() => setMenuOpen(false)}>Map</NavLink>
-          <NavLink className="nav-link" to="/smart-hub" onClick={() => setMenuOpen(false)}>Smart Hub</NavLink>
-          <NavLink className="nav-link" to="/report-incident" onClick={() => setMenuOpen(false)}>Report</NavLink>
+          <NavLink className="nav-link" to="/" onClick={() => setMenuOpen(false)} end>🏠 Home</NavLink>
+          <NavLink className="nav-link" to="/live-traffic" onClick={() => setMenuOpen(false)}>
+            <span className="live-dot-sm" />Traffic Updates
+          </NavLink>
+          <NavLink className="nav-link" to="/live-map" onClick={() => setMenuOpen(false)}>🗺️ Route Map</NavLink>
+          <NavLink className="nav-link" to="/smart-hub" onClick={() => setMenuOpen(false)}>🔧 Tools</NavLink>
+          <NavLink className="nav-link" to="/dashboard" onClick={() => setMenuOpen(false)}>📊 Dashboard</NavLink>
+          <NavLink className="nav-link report-nav-btn" to="/report-incident" onClick={() => setMenuOpen(false)}>⚠️ Report Problem</NavLink>
           {isAuthenticated ? (
             <div className="nav-auth-mobile">
               <span className="badge" style={{ alignSelf: 'center', margin: '8px 0' }}>{user?.role || 'User'}</span>

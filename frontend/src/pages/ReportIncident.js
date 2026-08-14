@@ -118,7 +118,7 @@ const ReportIncident = () => {
       setAddressLookup('');
       setMapCenter(dhakaCenter);
       setCurrentStep(1);
-      setMessage('Incident report submitted successfully.');
+      setMessage('✅ Report submitted! Thank you for helping Dhaka commuters. We will review it shortly.');
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to submit this incident.');
     } finally {
@@ -173,19 +173,25 @@ const ReportIncident = () => {
             <div className="form-grid" style={{ marginTop: 0 }}>
               <div className="grid grid-2">
                 <div className="form-row">
-                  <label htmlFor="title">Incident Title</label>
+                  <label htmlFor="title">What is the problem?</label>
                   <input id="title" name="title" value={form.title} onChange={updateField} placeholder="e.g. Waterlogging near circle" required />
                 </div>
                 <div className="form-row">
-                  <label htmlFor="type">Type</label>
-                  <select id="type" name="type" value={form.type} onChange={updateField}>
-                    <option>Congestion</option>
-                    <option>Accident</option>
-                    <option>Roadwork</option>
-                    <option>Flooding</option>
-                    <option>Signal Failure</option>
-                    <option>Other</option>
-                  </select>
+                  <label htmlFor="type">What kind of problem?</label>
+                  <div className="type-btn-group">
+                    {[
+                      { v: 'Congestion', icon: '🚗' },
+                      { v: 'Accident', icon: '💥' },
+                      { v: 'Roadwork', icon: '🚧' },
+                      { v: 'Flooding', icon: '🌊' },
+                      { v: 'Signal Failure', icon: '🚦' },
+                      { v: 'Other', icon: '❓' }
+                    ].map(t => (
+                      <button key={t.v} type="button" className={`type-btn ${form.type === t.v ? 'active' : ''}`} onClick={() => setForm(prev => ({...prev, type: t.v}))}>
+                        {t.icon} {t.v}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -207,7 +213,7 @@ const ReportIncident = () => {
               </div>
 
               <div className="form-row">
-                <label htmlFor="description">Description</label>
+                <label htmlFor="description">Tell us more (optional)</label>
                 <textarea id="description" name="description" value={form.description} onChange={updateField} placeholder="Provide details about the blockages, delays, or emergency services needed." />
               </div>
 
@@ -229,6 +235,11 @@ const ReportIncident = () => {
                 <input id="locationName" name="locationName" value={form.locationName} onChange={updateField} placeholder="e.g. Shahbagh, Banani" required />
               </div>
 
+              <div className="area-chip-group" style={{marginBottom:8}}>
+                {['Mirpur','Gulshan','Farmgate','Banani','Motijheel','Dhanmondi','Uttara','Shahbagh','Mohakhali','Rampura'].map(area => (
+                  <button key={area} type="button" className={`area-chip ${form.locationName === area ? 'active' : ''}`} onClick={() => setForm(prev => ({...prev, locationName: area}))}>{area}</button>
+                ))}
+              </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
                   style={{

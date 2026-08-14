@@ -83,8 +83,8 @@ const Dashboard = () => {
 
       <div className="section-header animate-in">
         <div>
-          <h1>Operations Dashboard</h1>
-          <p>Real-time analytics and incident response coordination board.</p>
+          <h1>Your Traffic Dashboard</h1>
+          <p>Monitor live incidents, corridors, and alerts for Dhaka.</p>
         </div>
       </div>
 
@@ -255,6 +255,21 @@ const Dashboard = () => {
             ))}
           </tbody>
         </table>
+      <div className="incident-card-list">
+        {data.incidents.map((incident) => (
+          <div key={incident._id} className="incident-mobile-card">
+            <div className="imc-header">
+              <strong>{incident.title}</strong>
+              <span className={`badge ${incident.severity === 'High' || incident.severity === 'Critical' ? 'danger' : incident.severity === 'Medium' ? 'warning' : 'success'}`}>{incident.severity}</span>
+            </div>
+            <div className="imc-meta">
+              <span>{incident.type}</span>
+              <span>{incident.locationName}</span>
+              <span className="badge" style={{background:'rgba(255,255,255,0.05)',color:'#fff'}}>{incident.status}</span>
+            </div>
+          </div>
+        ))}
+      </div>
         {!data.incidents.length && (
           <div className="empty-state">
             <div className="empty-state-icon">📋</div>
