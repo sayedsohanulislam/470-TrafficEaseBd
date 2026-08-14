@@ -91,47 +91,47 @@ const Dashboard = () => {
       {actionError && <div className="message error">{actionError}</div>}
       {!canManage && (
         <div className="message" style={{ marginBottom: '18px' }}>
-          Signed in as {user?.role}. Incident moderation controls are restricted to Authority and Admin accounts.
+          Hello {user?.name || 'there'}! You are logged in as a {user?.role || 'Commuter'}. You can submit road problem reports and view all updates. Road status moderation (resolving/updating reports) is managed by Dhaka Traffic Authorities.
         </div>
       )}
 
       {/* Quick Actions */}
       <div className="quick-actions animate-in animate-in-delay-1">
         <Link to="/report-incident" className="quick-action-btn">
-          <span className="qa-icon">⚠️</span> Report Incident
+          <span className="qa-icon">⚠️</span> Report Problem
         </Link>
         <Link to="/live-map" className="quick-action-btn">
-          <span className="qa-icon">🗺️</span> Open Map
+          <span className="qa-icon">🗺️</span> Show Live Map
         </Link>
         <Link to="/live-traffic" className="quick-action-btn">
-          <span className="qa-icon">📡</span> Live Traffic
+          <span className="qa-icon">🚦</span> Road Speeds
         </Link>
         <Link to="/smart-hub" className="quick-action-btn">
-          <span className="qa-icon">🧠</span> Smart Hub
+          <span className="qa-icon">✨</span> All Services
         </Link>
       </div>
 
       {/* Stats */}
       <section className="grid grid-4 animate-in animate-in-delay-1" style={{ marginBottom: '24px' }}>
         <article className="stat-tile">
-          <span>Open Incidents</span>
+          <span>Active Reports</span>
           <strong>{summary.incidents}</strong>
-          <p>Active traffic emergencies</p>
+          <p>Jams, crashes, or floods</p>
         </article>
         <article className="stat-tile">
-          <span>Tracked Vehicles</span>
+          <span>Support Vehicles</span>
           <strong>{summary.vehicles}</strong>
-          <p>Emergency fleet units online</p>
+          <p>Emergency units on duty</p>
         </article>
         <article className="stat-tile">
-          <span>Active Alerts</span>
+          <span>Public Alerts</span>
           <strong>{summary.activeAlerts}</strong>
-          <p>Public broadcasts active</p>
+          <p>Official notices broadcasted</p>
         </article>
         <article className="stat-tile">
-          <span>Traffic Load</span>
+          <span>City Jam Level</span>
           <strong>{data.traffic.averageCongestion}%</strong>
-          <p>Dhaka network pressure</p>
+          <p>Average traffic pressure</p>
         </article>
       </section>
 
@@ -140,7 +140,7 @@ const Dashboard = () => {
       {/* Ops Grid */}
       <section className="ops-grid dashboard-ops animate-in animate-in-delay-2" style={{ marginBottom: '32px' }}>
         <article className="card dense-card">
-          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>📊 Live Corridor Watch</h2>
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>📊 Congested Dhaka Roads</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {data.traffic.corridors.slice(0, 5).map((corridor) => (
               <div className="mini-row" key={corridor.id}>
@@ -156,7 +156,7 @@ const Dashboard = () => {
         </article>
 
         <article className="card dense-card">
-          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>🚨 Authority Actions</h2>
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>🚨 Traffic Control & Support Dispatch</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {data.traffic.dispatchQueue.map((task) => (
               <div className="mini-row" key={task.task}>
@@ -176,8 +176,8 @@ const Dashboard = () => {
       {/* Recent Incidents */}
       <section className="section-header animate-in animate-in-delay-2" style={{ margin: '20px 0 16px' }}>
         <div>
-          <h2>Recent Incidents</h2>
-          <p>{loading ? 'Loading command logs...' : 'Commuter-reported incidents and field operations feedback.'}</p>
+          <h2>Recent Road Reports</h2>
+          <p>{loading ? 'Loading reports...' : 'Traffic reports submitted by the community and updates from traffic police.'}</p>
         </div>
       </section>
 

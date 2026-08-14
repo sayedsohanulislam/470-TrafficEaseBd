@@ -45,15 +45,15 @@ const Register = () => {
     if (/[A-Z]/.test(pw)) score++;
     if (/[0-9]/.test(pw)) score++;
     if (/[^A-Za-z0-9]/.test(pw)) score++;
-    if (score <= 1) return { label: 'Weak', level: 1, color: 'var(--danger)' };
-    if (score <= 3) return { label: 'Medium', level: 2, color: 'var(--primary)' };
-    return { label: 'Strong', level: 3, color: 'var(--success)' };
+    if (score <= 1) return { label: 'Too short / weak', level: 1, color: 'var(--danger)' };
+    if (score <= 3) return { label: 'Medium strength', level: 2, color: 'var(--primary)' };
+    return { label: 'Strong password', level: 3, color: 'var(--success)' };
   };
 
   const strength = getPasswordStrength();
 
   return (
-    <div className="auth-split">
+    <div className="auth-split animate-in">
       {/* Branding Panel */}
       <div className="auth-brand-panel">
         <span className="brand-mark" aria-hidden="true">
@@ -62,19 +62,19 @@ const Register = () => {
           <span />
         </span>
         <h2>Join TrafficEase BD</h2>
-        <p>Create your account and become part of Dhaka's smarter commuting network.</p>
+        <p>Become part of Dhaka's friendly community road app. It is 100% free and open to everyone.</p>
         <div className="auth-brand-features">
           <div>
             <span className="auth-feature-icon">🏍️</span>
-            <span>Secure commuter and driver registration</span>
+            <span>Simple, secure account for commuters & drivers</span>
           </div>
           <div>
             <span className="auth-feature-icon">📱</span>
-            <span>Report incidents and track resolutions</span>
+            <span>Report traffic jams and help other drivers</span>
           </div>
           <div>
-            <span className="auth-feature-icon">📊</span>
-            <span>Personal dashboard with analytics</span>
+            <span className="auth-feature-icon">🏠</span>
+            <span>Save your home & work routes for daily updates</span>
           </div>
         </div>
       </div>
@@ -83,30 +83,30 @@ const Register = () => {
       <div className="auth-form-panel">
         <section className="auth-card">
           <h1>Register</h1>
-          <p>Create a commuter or driver account. Privileged roles require administrator approval.</p>
+          <p>Create your account in 30 seconds.</p>
           {error && <div className="message error">{error}</div>}
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="form-row">
               <label htmlFor="name">👤 Full Name</label>
-              <input id="name" name="name" value={form.name} onChange={updateField} placeholder="Enter your full name" required />
+              <input id="name" name="name" value={form.name} onChange={updateField} placeholder="e.g. Abir Rahman" required />
             </div>
             <div className="form-row">
-              <label htmlFor="email">📧 Email</label>
-              <input id="email" name="email" type="email" value={form.email} onChange={updateField} placeholder="you@example.com" required />
+              <label htmlFor="email">📧 Email Address</label>
+              <input id="email" name="email" type="email" value={form.email} onChange={updateField} placeholder="e.g. abir@domain.com" required />
             </div>
             <div className="form-row">
-              <label htmlFor="phone">📞 Phone</label>
-              <input id="phone" name="phone" value={form.phone} onChange={updateField} placeholder="01XXX-XXXXXX" />
+              <label htmlFor="phone">📞 Phone Number (Optional)</label>
+              <input id="phone" name="phone" value={form.phone} onChange={updateField} placeholder="e.g. 01712345678" />
             </div>
             <div className="form-row">
-              <label htmlFor="role">🎭 Role</label>
+              <label htmlFor="role">🎭 What do you do?</label>
               <select id="role" name="role" value={form.role} onChange={updateField}>
-                <option>Commuter</option>
-                <option>Driver</option>
+                <option value="Commuter">I am a Commuter (Bus, CNG, Rickshaw, Car)</option>
+                <option value="Driver">I am a Driver / Ride-share rider</option>
               </select>
             </div>
             <div className="form-row">
-              <label htmlFor="password">🔒 Password</label>
+              <label htmlFor="password">🔒 Create Password</label>
               <input id="password" name="password" type="password" value={form.password} onChange={updateField} placeholder="Minimum 8 characters" minLength="8" required />
               {form.password && (
                 <div style={{ marginTop: '8px' }}>
@@ -129,15 +129,15 @@ const Register = () => {
               )}
             </div>
             <div className="form-footer">
-              <Link to="/login">Already registered?</Link>
+              <Link to="/login">Already have an account? Login</Link>
               <button className="button" type="submit" disabled={loading}>
-                {loading ? 'Creating...' : 'Register'}
+                {loading ? 'Creating account...' : 'Create Account'}
               </button>
             </div>
           </form>
 
           <p className="panel-subtitle" style={{ marginTop: '18px' }}>
-            Authority and administrator accounts are provisioned outside public registration.
+            We do not share your contact details. They are only used to help keep Dhaka's traffic updates clean and accurate.
           </p>
         </section>
       </div>

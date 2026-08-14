@@ -487,35 +487,35 @@ const LiveMap = () => {
               style={{ padding: '8px 12px', fontSize: '0.82rem', height: 'auto' }}
               onClick={() => setActiveTab('telemetry')}
             >
-              📊 Map Layers
+              🚦 Jams & Updates
             </button>
             <button
               className={`button ${activeTab === 'navigator' ? '' : 'secondary'}`}
               style={{ padding: '8px 12px', fontSize: '0.82rem', height: 'auto' }}
               onClick={() => setActiveTab('navigator')}
             >
-              🗺️ Route Planner
+              🧭 Journey Planner
             </button>
           </div>
 
           {activeTab === 'telemetry' ? (
             <>
-              <h2 className="panel-title" style={{ fontSize: '1.2rem', marginTop: 0 }}>Live Map Layers</h2>
-              <p className="panel-subtitle" style={{ margin: 0 }}>Corridors indicate traffic speed. Markers indicate active field response assets and incidents.</p>
+              <h2 className="panel-title" style={{ fontSize: '1.2rem', marginTop: 0 }}>Traffic & Road Reports</h2>
+              <p className="panel-subtitle" style={{ margin: 0 }}>Colored lines show how fast traffic is moving. Markers show jams, accidents, flooding, and emergency vehicles.</p>
               
               <div className="status-list" style={{ marginTop: '8px' }}>
-                <h3 style={{ fontSize: '0.88rem', textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '0.5px', marginBottom: '4px' }}>Hotspot Corridors</h3>
+                <h3 style={{ fontSize: '0.88rem', textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '0.5px', marginBottom: '4px' }}>Jammed Roads & Congestion</h3>
                 {traffic.corridors.slice(0, 3).map((corridor) => (
                   <div className="status-item" key={corridor.id}>
                     <div>
                       <strong>{corridor.area}</strong>
-                      <span>{corridor.speedKph} km/h - {corridor.delayMin}m delay</span>
+                      <span>{corridor.speedKph} km/h - {corridor.delayMin} min delay</span>
                     </div>
-                    <span className={`badge ${corridor.congestion > 80 ? 'danger' : 'warning'}`}>{corridor.congestion}%</span>
+                    <span className={`badge ${corridor.congestion > 80 ? 'danger' : 'warning'}`}>{corridor.congestion}% Jam</span>
                   </div>
                 ))}
 
-                <h3 style={{ fontSize: '0.88rem', textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '0.5px', marginTop: '16px', marginBottom: '4px' }}>Active Incidents</h3>
+                <h3 style={{ fontSize: '0.88rem', textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '0.5px', marginTop: '16px', marginBottom: '4px' }}>Active Road Problems</h3>
                 {visibleIncidents.map((incident) => (
                   <div className="status-item" key={incident._id}>
                     <div>

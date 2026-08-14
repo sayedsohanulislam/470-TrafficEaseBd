@@ -31,7 +31,7 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-split">
+    <div className="auth-split animate-in">
       {/* Branding Panel */}
       <div className="auth-brand-panel">
         <span className="brand-mark" aria-hidden="true">
@@ -39,20 +39,20 @@ const Login = () => {
           <span />
           <span />
         </span>
-        <h2>Welcome Back</h2>
-        <p>Access Dhaka's real-time urban mobility command center and stay ahead of the traffic.</p>
+        <h2>Welcome Back to TrafficEase BD</h2>
+        <p>Your simple assistant for traveling in Dhaka. Sign in to help other commuters and save your daily travel routes.</p>
         <div className="auth-brand-features">
           <div>
-            <span className="auth-feature-icon">📡</span>
-            <span>Live corridor monitoring across 12+ zones</span>
+            <span className="auth-feature-icon">🚗</span>
+            <span>Check live road congestion across Dhaka</span>
           </div>
           <div>
-            <span className="auth-feature-icon">🗺️</span>
-            <span>Smart bypass route planning</span>
+            <span className="auth-feature-icon">🧭</span>
+            <span>Find the fastest bypass routes</span>
           </div>
           <div>
-            <span className="auth-feature-icon">🚨</span>
-            <span>Instant incident reporting & alerts</span>
+            <span className="auth-feature-icon">⚠️</span>
+            <span>Report traffic jams, flooding, and accidents</span>
           </div>
         </div>
       </div>
@@ -61,27 +61,27 @@ const Login = () => {
       <div className="auth-form-panel">
         <section className="auth-card">
           <h1>Login</h1>
-          <p>Access the TrafficEase BD operations dashboard.</p>
+          <p>Enter your details below to access your account.</p>
           {error && <div className="message error">{error}</div>}
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="form-row">
-              <label htmlFor="email">📧 Email</label>
-              <input id="email" name="email" type="email" value={form.email} onChange={updateField} placeholder="you@example.com" required />
+              <label htmlFor="email">📧 Email Address</label>
+              <input id="email" name="email" type="email" value={form.email} onChange={updateField} placeholder="e.g. name@domain.com" required />
             </div>
             <div className="form-row">
               <label htmlFor="password">🔒 Password</label>
               <input id="password" name="password" type="password" value={form.password} onChange={updateField} placeholder="Enter your password" required />
             </div>
             <div className="form-footer">
-              <Link to="/register">Create account</Link>
+              <Link to="/register">Don't have an account? Register</Link>
               <button className="button" type="submit" disabled={loading}>
-                {loading ? 'Signing in...' : 'Login'}
+                {loading ? 'Logging you in...' : 'Login'}
               </button>
             </div>
           </form>
 
           <p className="panel-subtitle" style={{ marginTop: '18px' }}>
-            Accounts are authenticated by the TrafficEase BD API. Administrative roles are assigned by the project administrator.
+            Logging in helps us verify who submits traffic reports, ensuring our maps stay accurate for everyone in Dhaka.
           </p>
         </section>
       </div>
