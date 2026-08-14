@@ -334,48 +334,45 @@ const RoutePlanner = () => {
 
       {error && <div className="tool-error">{error}</div>}
 
-      {(route || fromCoords || toCoords) && (
-        <>
-          {route && (
-            <div className="route-stats">
-              <div className="route-stat"><span>Distance</span><strong>{route.distanceKm} km</strong></div>
-              <div className="route-stat"><span>Est. Time (Car)</span><strong>{route.durationMin} min</strong></div>
-              <div className="route-stat"><span>CNG Fare</span><strong>Tk {Math.round(fareRates.cng.base + route.distanceKm * fareRates.cng.perKm)}–{Math.round(fareRates.cng.base + route.distanceKm * route.distanceKm * 1.2)}</strong></div>
-              <div className="route-stat"><span>Bus Fare</span><strong>Tk {Math.max(15, Math.round(route.distanceKm * fareRates.bus.perKm + fareRates.bus.flat))}</strong></div>
-            </div>
-          )}
-          <div className="tool-map-wrap">
-            <MapContainer center={route ? route.fromCoords : fromCoords || toCoords} zoom={13} style={{ height: 380, width: '100%', borderRadius: 12 }}>
-              <TileLayer url={TILE_URL} subdomains={TILE_SUB} maxZoom={20} />
-              <MapClickHandler onMapClick={handleMapClick} />
-              {route && <MapFly center={route.fromCoords} />}
-              {route && <Polyline positions={route.geometry} pathOptions={{ color: '#4c8dff', weight: 5 }} />}
-              {(route || fromCoords) && (
-                <CircleMarker center={route ? route.fromCoords : fromCoords} radius={10} pathOptions={{ color: '#2fbf71', fillColor: '#2fbf71', fillOpacity: 1 }}>
-                  <Popup>Start: {from}</Popup>
-                </CircleMarker>
-              )}
-              {(route || toCoords) && (
-                <CircleMarker center={route ? route.toCoords : toCoords} radius={10} pathOptions={{ color: '#f0525b', fillColor: '#f0525b', fillOpacity: 1 }}>
-                  <Popup>End: {to}</Popup>
-                </CircleMarker>
-              )}
-            </MapContainer>
-          </div>
+      {route && (
+        <div className="route-stats">
+          <div className="route-stat"><span>Distance</span><strong>{route.distanceKm} km</strong></div>
+          <div className="route-stat"><span>Est. Time (Car)</span><strong>{route.durationMin} min</strong></div>
+          <div className="route-stat"><span>CNG Fare</span><strong>Tk {Math.round(fareRates.cng.base + route.distanceKm * route.distanceKm * 1.2)}</strong></div>
+          <div className="route-stat"><span>Bus Fare</span><strong>Tk {Math.max(15, Math.round(route.distanceKm * fareRates.bus.perKm + fareRates.bus.flat))}</strong></div>
+        </div>
+      )}
 
-          {route && route.steps && route.steps.length > 0 && (
-            <div className="simple-directions" style={{ marginTop: '16px', background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-              <h3 style={{ fontSize: '1rem', color: '#fff', marginBottom: '12px', borderBottom: '1px solid var(--line)', paddingBottom: '6px' }}>📋 Step-by-Step Directions</h3>
-              <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {route.steps.map((step, idx) => (
-                  <li key={idx} style={{ fontSize: '0.86rem', color: '#eee' }}>
-                    <strong>{step.instruction}</strong> {step.distance > 0 && <span style={{ color: 'var(--friendly-muted)', fontSize: '0.78rem' }}>({step.distance} meters)</span>}
-                  </li>
-                ))}
-              </ol>
-            </div>
+      <div className="tool-map-wrap" style={{ marginTop: '14px' }}>
+        <MapContainer center={route ? route.fromCoords : fromCoords || toCoords || dhakaCenter} zoom={route ? 13 : 12} style={{ height: 380, width: '100%', borderRadius: 12 }}>
+          <TileLayer url={TILE_URL} subdomains={TILE_SUB} maxZoom={20} />
+          <MapClickHandler onMapClick={handleMapClick} />
+          {route && <MapFly center={route.fromCoords} />}
+          {route && <Polyline positions={route.geometry} pathOptions={{ color: '#4c8dff', weight: 5 }} />}
+          {(route || fromCoords) && (
+            <CircleMarker center={route ? route.fromCoords : fromCoords} radius={10} pathOptions={{ color: '#2fbf71', fillColor: '#2fbf71', fillOpacity: 1 }}>
+              <Popup>Start: {from || 'Start Point'}</Popup>
+            </CircleMarker>
           )}
-        </>
+          {(route || toCoords) && (
+            <CircleMarker center={route ? route.toCoords : toCoords} radius={10} pathOptions={{ color: '#f0525b', fillColor: '#f0525b', fillOpacity: 1 }}>
+              <Popup>End: {to || 'Destination'}</Popup>
+            </CircleMarker>
+          )}
+        </MapContainer>
+      </div>
+
+      {route && route.steps && route.steps.length > 0 && (
+        <div className="simple-directions" style={{ marginTop: '16px', background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--line)' }}>
+          <h3 style={{ fontSize: '1rem', color: '#fff', marginBottom: '12px', borderBottom: '1px solid var(--line)', paddingBottom: '6px' }}>📋 Step-by-Step Directions</h3>
+          <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {route.steps.map((step, idx) => (
+              <li key={idx} style={{ fontSize: '0.86rem', color: '#eee' }}>
+                <strong>{step.instruction}</strong> {step.distance > 0 && <span style={{ color: 'var(--friendly-muted)', fontSize: '0.78rem' }}>({step.distance} meters)</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
       )}
     </div>
   );
