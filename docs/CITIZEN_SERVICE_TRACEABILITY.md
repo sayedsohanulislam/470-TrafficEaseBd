@@ -24,12 +24,16 @@ This is the canonical commuter-facing feature list. A feature counts here only w
 | CS-18 | Track a submitted report | Opens reports previously submitted from the same device | Sees whether each report is open, investigating, or resolved | `SmartHub.js` → `MyReports`; `GET /api/incidents/:id` |
 | CS-19 | Save a daily commute | Saves home and work areas | Receives a reusable leave-now recommendation | `SmartHub.js` → `CommutePlanner`; device-local preferences |
 | CS-20 | Read official alerts | Opens the official-alert feed | Sees affected area, severity, and commuter advice | `SmartHub.js` → `AuthorityAlerts`; `GET /api/alerts` |
+| CS-21 | Check air quality | Opens the air quality tool | Sees live AQI and pollution data | `SmartHub.js` → `AirQuality` |
+| CS-22 | Check weather | Opens the weather forecast tool | Sees current weather and AccuWeather link | `SmartHub.js` → `Weather` |
+| CS-23 | Subscribe to offline alerts | Enters phone number and route | Subscribes to critical traffic SMS | `SmartHub.js` → `OfflineSms` |
+| CS-24 | Check rain probability | Enters a location | Gets hyper-local short term rain warning | `SmartHub.js` → `RainWarning` |
 
 ## User-experience acceptance rules
 
 - The home page starts with the question commuters actually have: where they want to go.
 - The service hub is searchable in English and Bangla.
-- The 20 services are organized into five everyday needs, with four services in each group.
+- The 24 services are organized into everyday needs.
 - Every card states the task, expected result, and a direct action button.
 - Each service opens through a stable deep link such as `/smart-hub?tool=bus-finder`.
 - Users can save frequently used services on their device.
@@ -38,4 +42,4 @@ This is the canonical commuter-facing feature list. A feature counts here only w
 
 ## Supporting capabilities
 
-Signals, dispatch, audit logging, protected authority actions, database fallback, JWT authorization, and traffic calculations remain important technical capabilities. They are documented separately in `FEATURE_TRACEABILITY.md` and should be demonstrated as architecture or authority workflows—not counted as 20 additional commuter features.
+Signals, dispatch, audit logging, protected authority actions, database fallback, JWT authorization, and traffic calculations remain important technical capabilities. They are documented separately in `FEATURE_TRACEABILITY.md` and should be demonstrated as architecture or authority workflows—not counted as 24 additional commuter features.

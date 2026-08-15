@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
+import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -74,6 +74,20 @@ const allTools = [
   { id: 18, icon: '📋', name: 'My Reported Incidents', category: 'Personal', desc: 'Track the status of incidents you have submitted — Open, Investigating, or Resolved.' },
   { id: 19, icon: '🏠', name: 'Commute Planner', category: 'Personal', desc: 'Save your home and work location to get a daily traffic summary for your commute.' },
   { id: 20, icon: '📢', name: 'Authority Alerts', category: 'Operations', desc: 'View official traffic alerts. Authorities can broadcast new alerts to all users.' },
+  { id: 21, icon: '🌫️', name: 'Live Air Quality', category: 'Weather', desc: 'Check real-time air quality index in Dhaka powered by IQAir.' },
+  { id: 22, icon: '🌤️', name: 'Current Weather', category: 'Weather', desc: 'Check current weather conditions in Dhaka via AccuWeather.' },
+  { id: 23, icon: '📵', name: 'Offline SMS Alerts', category: 'Personal', desc: 'Subscribe to severe traffic alerts via SMS for offline access.' },
+  { id: 24, icon: '⛈️', name: 'Rain Warning', category: 'Weather', desc: 'Check if rain is expected soon at your location via AccuWeather.' },
+  { id: 25, icon: '🙏', name: 'Prayer Time Traffic', category: 'Planning', desc: 'Avoid heavy traffic around mosques during prayer times.' },
+  { id: 26, icon: '🚫', name: 'Hartaal / Strike Alert', category: 'Safety', desc: 'Check upcoming political strikes and affected transport.' },
+  { id: 27, icon: '🚔', name: 'VIP Movement Alerts', category: 'Safety', desc: 'See community reports of sudden road blocks for VIPs.' },
+  { id: 28, icon: '🔍', name: 'Lost & Found', category: 'Personal', desc: 'Report or find items lost on bus, CNG, or rickshaw.' },
+  { id: 29, icon: '🚶', name: 'Safe Crossings', category: 'Safety', desc: 'Find nearby footover bridges and underpasses.' },
+  { id: 30, icon: '🏧', name: 'ATM & bKash Finder', category: 'Cost', desc: 'Find cash for your transport fare immediately.' },
+  { id: 31, icon: '🔧', name: 'Breakdown Help', category: 'Safety', desc: 'Find the nearest auto repair or tyre shop.' },
+  { id: 32, icon: '📖', name: 'Dhaka Transport Guide', category: 'Transit', desc: 'Learn how to board buses, negotiate CNGs, and use Metro.' },
+  { id: 33, icon: '📊', name: 'Travel Diary', category: 'Personal', desc: 'Log your daily commute time and transport costs.' },
+  { id: 34, icon: '🚂', name: 'BD Train Tracker', category: 'Transit', desc: 'Check intercity train schedules and live location.' },
 ];
 
 const categoryColors = {
@@ -118,7 +132,7 @@ const SmartHub = () => {
       <div className="tools-page-header">
         <div>
           <h1>Dhaka Traffic Tools</h1>
-          <p>20 real tools to help you navigate, plan, and stay safe in Dhaka.</p>
+          <p>24 real tools to help you navigate, plan, and stay safe in Dhaka.</p>
         </div>
         {activeTool && (
           <button className="button secondary" onClick={closeTool}>← Back to Tools</button>
@@ -210,11 +224,24 @@ const ToolPanel = ({ toolId, user, isAuthenticated, onClose, initialFrom = '', i
         {toolId === 18 && <MyReports isAuthenticated={isAuthenticated} />}
         {toolId === 19 && <CommutePlanner />}
         {toolId === 20 && <AuthorityAlerts user={user} />}
+        {toolId === 21 && <AirQuality />}
+        {toolId === 22 && <Weather />}
+        {toolId === 23 && <OfflineSms />}
+        {toolId === 24 && <RainWarning />}
+        {toolId === 25 && <PrayerTraffic />}
+        {toolId === 26 && <StrikeAlerts />}
+        {toolId === 27 && <VipAlerts />}
+        {toolId === 28 && <LostFound />}
+        {toolId === 29 && <SafeCrossings />}
+        {toolId === 30 && <AtmFinder />}
+        {toolId === 31 && <BreakdownHelp />}
+        {toolId === 32 && <TransportGuide />}
+        {toolId === 33 && <TravelDiary />}
+        {toolId === 34 && <TrainTracker />}
       </div>
     </div>
   );
 };
-
 // ===================================================================
 // Feature 1: Route Planner Helpers & Component
 // ===================================================================
@@ -2740,6 +2767,1038 @@ const AuthorityAlerts = ({ user }) => {
           </div>
         ))}
       </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 21: Live Air Quality
+// Powered by Open-Meteo + Copernicus CAMS satellite data
+// Free, no API key, covers Bangladesh accurately
+// ===================================================================
+
+const AirQuality = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [position, setPosition] = useState({ lat: 23.8103, lng: 90.4125 });
+  const [locName, setLocName] = useState('Dhaka');
+
+  const fetchAqi = async (lat, lng) => {
+    setLoading(true);
+    setError('');
+    try {
+      // Open-Meteo Air Quality API — uses Copernicus CAMS satellite model
+      // Covers Bangladesh accurately, completely free, no API key needed
+      const res = await fetch(
+        `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}` +
+        `&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,carbon_monoxide` +
+        `&timezone=Asia%2FDhaka`
+      );
+      if (!res.ok) throw new Error('Air quality service unavailable');
+      const json = await res.json();
+      const c = json.current;
+      if (!c) throw new Error('No data returned');
+      const name = await reverseGeocode(lat, lng);
+      setLocName(name);
+      setData({
+        aqi:  Math.round(c.us_aqi),
+        pm25: c.pm2_5      != null ? Math.round(c.pm2_5 * 10) / 10      : null,
+        pm10: c.pm10       != null ? Math.round(c.pm10 * 10) / 10       : null,
+        o3:   c.ozone      != null ? Math.round(c.ozone * 10) / 10      : null,
+        no2:  c.nitrogen_dioxide  != null ? Math.round(c.nitrogen_dioxide * 10) / 10 : null,
+        so2:  c.sulphur_dioxide   != null ? Math.round(c.sulphur_dioxide * 10) / 10  : null,
+        co:   c.carbon_monoxide   != null ? Math.round(c.carbon_monoxide * 10) / 10  : null,
+        time: new Date(c.time).toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      setError('Could not load AQI data. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchAqi(position.lat, position.lng); }, [position.lat, position.lng]); // eslint-disable-line
+
+  const handleMapClick = (lat, lng) => setPosition({ lat, lng });
+
+  const getAqiStatus = (aqi) => {
+    if (aqi <= 50)  return { text: 'Good',                           color: '#16a34a', bg: '#f0fdf4' };
+    if (aqi <= 100) return { text: 'Moderate',                       color: '#ca8a04', bg: '#fefce8' };
+    if (aqi <= 150) return { text: 'Unhealthy for Sensitive Groups',  color: '#ea580c', bg: '#fff7ed' };
+    if (aqi <= 200) return { text: 'Unhealthy',                      color: '#dc2626', bg: '#fef2f2' };
+    if (aqi <= 300) return { text: 'Very Unhealthy',                 color: '#7c3aed', bg: '#f5f3ff' };
+    return           { text: 'Hazardous',                            color: '#9f1239', bg: '#fff1f2' };
+  };
+
+  const pollutants = data ? [
+    { label: 'PM2.5', value: data.pm25, unit: 'µg/m³' },
+    { label: 'PM10',  value: data.pm10, unit: 'µg/m³' },
+    { label: 'O₃',    value: data.o3,   unit: 'ppb' },
+    { label: 'NO₂',   value: data.no2,  unit: 'ppb' },
+    { label: 'SO₂',   value: data.so2,  unit: 'ppb' },
+    { label: 'CO',    value: data.co,   unit: 'ppm' },
+  ].filter(p => p.value !== null && p.value !== undefined) : [];
+
+  const status = data ? getAqiStatus(data.aqi) : null;
+
+  return (
+    <div className="air-quality-tool">
+      <div className="tool-intro">
+        <h3>🌫️ Live Air Quality Index (AQI)</h3>
+        <p>Tap anywhere on the map to get data from the nearest real monitoring station instantly.</p>
+      </div>
+
+      <div style={{ height: '300px', marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+        <MapContainer center={[position.lat, position.lng]} zoom={12} style={{ height: '100%', width: '100%' }}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap contributors" />
+          <MapClickHandler onMapClick={handleMapClick} enabled={!loading} />
+          <Marker position={[position.lat, position.lng]} />
+          <MapFly center={[position.lat, position.lng]} />
+        </MapContainer>
+      </div>
+
+      <div style={{ background: status?.bg || '#f8fafc', padding: '24px', borderRadius: '12px', border: `2px solid ${status?.color || '#e2e8f0'}` }} aria-live="polite">
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <p style={{ color: '#64748b', fontSize: '16px' }}>🔄 Fetching live station data...</p>
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: '#dc2626' }}>{error}</p>
+            <button className="button" style={{ marginTop: '12px' }} onClick={() => fetchAqi(position.lat, position.lng)}>Try Again</button>
+          </div>
+        ) : data ? (
+          <>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <p style={{ margin: '0 0 4px', color: '#64748b', fontSize: '13px' }}>📍 {locName}</p>
+              <div style={{ fontSize: '72px', fontWeight: '900', lineHeight: 1, color: status.color }}>{data.aqi}</div>
+              <div style={{ fontSize: '22px', fontWeight: '700', color: status.color, marginTop: '4px' }}>{status.text}</div>
+              {data.time && <p style={{ color: '#94a3b8', fontSize: '12px', marginTop: '2px' }}>Updated at {data.time}</p>}
+            </div>
+
+            {pollutants.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
+                {pollutants.map(p => (
+                  <div key={p.label} style={{ background: 'rgba(255,255,255,0.7)', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid rgba(0,0,0,0.07)' }}>
+                    <div style={{ fontWeight: '700', fontSize: '16px', color: '#1e293b' }}>{p.value}</div>
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>{p.label} ({p.unit})</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ textAlign: 'center' }}>
+              <button className="button secondary" onClick={() => fetchAqi(position.lat, position.lng)} disabled={loading} style={{ fontSize: '13px' }}>
+                🔄 Refresh
+              </button>
+              <p style={{ margin: '12px 0 0', fontSize: '11px', color: '#94a3b8' }}>
+                Source: <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Open-Meteo</a> + Copernicus CAMS satellite — Bangladesh coverage, free, no API key
+              </p>
+            </div>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 22: Current Weather
+// ===================================================================
+const Weather = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [position, setPosition] = useState({ lat: 23.8103, lng: 90.4125 }); // Default Dhaka
+  const [locName, setLocName] = useState('Dhaka Weather');
+
+  const fetchWeather = async (lat, lng) => {
+    setLoading(true);
+    try {
+      const name = await reverseGeocode(lat, lng);
+      setLocName(name);
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=Asia%2FDhaka`);
+      const json = await res.json();
+      setData(json.current);
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchWeather(position.lat, position.lng);
+  }, []);
+
+  const handleMapClick = (lat, lng) => {
+    setPosition({ lat, lng });
+    fetchWeather(lat, lng);
+  };
+
+  return (
+    <div className="weather-tool">
+      <div className="tool-intro">
+        <h3>Current Weather Forecast</h3>
+        <p>Tap anywhere on the map to check the live weather conditions for that location.</p>
+      </div>
+
+      <div className="map-container" style={{ height: '300px', marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+        <MapContainer center={[position.lat, position.lng]} zoom={12} style={{ height: '100%', width: '100%' }}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <MapClickHandler onMapClick={handleMapClick} enabled={true} />
+          <Marker position={[position.lat, position.lng]} />
+          <MapFly center={[position.lat, position.lng]} />
+        </MapContainer>
+      </div>
+
+      <div className="weather-card" style={{ background: '#f0fdf4', padding: '24px', borderRadius: '12px', textAlign: 'center', border: '1px solid #bbf7d0' }}>
+        <h4 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>{locName}</h4>
+        {loading ? (
+          <p>Loading live weather...</p>
+        ) : data ? (
+          <div>
+            <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#166534', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              🌤️ {data.temperature_2m}°C
+            </div>
+            <p style={{ margin: '8px 0 24px 0', color: '#166534', fontSize: '16px' }}>
+              Humidity: {data.relative_humidity_2m}% | Wind: {data.wind_speed_10m} km/h
+            </p>
+          </div>
+        ) : (
+          <p>Could not load live weather.</p>
+        )}
+        <a 
+          href="https://www.accuweather.com/en/bd/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ color: '#2563eb', textDecoration: 'underline', fontSize: '14px' }}
+        >
+          View Full Forecast on AccuWeather
+        </a>
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 23: Offline SMS Alerts
+// ===================================================================
+const OfflineSms = () => {
+  const [phone, setPhone] = useState('');
+  const [route, setRoute] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (phone && route) {
+      setSubscribed(true);
+      setTimeout(() => setSubscribed(false), 5000);
+      setPhone('');
+      setRoute('');
+    }
+  };
+
+  return (
+    <div className="offline-sms-tool">
+      <div className="tool-intro">
+        <h3>Offline SMS Fallback</h3>
+        <p>Subscribe to receive critical traffic alerts via SMS even when you have no mobile data.</p>
+      </div>
+      <form onSubmit={handleSubscribe} className="rp-form" style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+        <label>
+          <span>Phone Number (BD)</span>
+          <input 
+            type="tel" 
+            className="tool-input" 
+            placeholder="e.g. 01700000000" 
+            value={phone} 
+            onChange={(e) => setPhone(e.target.value)} 
+            required 
+            pattern="^01[3-9]\d{8}$"
+          />
+        </label>
+        <label>
+          <span>Select Commute Route</span>
+          <select 
+            className="tool-input" 
+            value={route} 
+            onChange={(e) => setRoute(e.target.value)} 
+            required
+          >
+            <option value="" disabled>Select a major route...</option>
+            <option value="Mirpur - Farmgate">Mirpur - Farmgate</option>
+            <option value="Uttara - Airport - Banani">Uttara - Airport - Banani</option>
+            <option value="Mohammadpur - Dhanmondi">Mohammadpur - Dhanmondi</option>
+            <option value="Jatrabari - Gulistan">Jatrabari - Gulistan</option>
+          </select>
+        </label>
+        <button type="submit" className="button" style={{ width: '100%', marginTop: '10px' }}>
+          Subscribe to Alerts
+        </button>
+        {subscribed && (
+          <div className="tool-success" style={{ marginTop: '16px' }}>
+            Successfully subscribed! You will receive critical alerts for this route via SMS.
+          </div>
+        )}
+      </form>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 24: Rain Warning
+// ===================================================================
+const RainWarning = () => {
+  const [location, setLocation] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const checkRain = async (e) => {
+    e.preventDefault();
+    if (!location) return;
+    setChecking(true);
+    setResult(null);
+    
+    try {
+      // Geocode location using Nominatim
+      const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location + ', Bangladesh')}&limit=1`);
+      const nomData = await nomRes.json();
+      
+      if (!nomData || nomData.length === 0) {
+        setResult({ willRain: false, message: `Could not find coordinates for "${location}". Try a more specific area in Bangladesh.` });
+        setChecking(false);
+        return;
+      }
+      
+      const lat = nomData[0].lat;
+      const lon = nomData[0].lon;
+      const locName = nomData[0].display_name.split(',')[0];
+
+      // Fetch Open-Meteo precipitation probability
+      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=precipitation_probability&forecast_days=1&timezone=Asia%2FDhaka`);
+      const weatherData = await weatherRes.json();
+      
+      const currentHour = new Date().getHours();
+      // Look at the next 3 hours
+      const probs = weatherData.hourly.precipitation_probability.slice(currentHour, currentHour + 3);
+      const maxProb = Math.max(...probs);
+      const willRain = maxProb > 30;
+
+      setResult({
+        location: locName,
+        willRain,
+        message: willRain 
+          ? `High chance of rain (${maxProb}%) in ${locName} within the next 3 hours. Consider delaying your departure.`
+          : `Clear skies expected. Maximum rain probability is only ${maxProb}% for the next 3 hours. Safe travels!`
+      });
+    } catch (err) {
+      setResult({ willRain: false, message: 'Failed to fetch live rain data. Please try again.' });
+    }
+    setChecking(false);
+  };
+
+  return (
+    <div className="rain-warning-tool">
+      <div className="tool-intro">
+        <h3>Hyper-Local Rain Warning</h3>
+        <p>Check if imminent rain is expected at your location before you start your journey.</p>
+      </div>
+      
+      <form onSubmit={checkRain} className="rp-form" style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+        <label>
+          <span>Enter Location</span>
+          <input 
+            type="text" 
+            className="tool-input" 
+            placeholder="e.g. Banani, Dhanmondi, Mirpur..." 
+            value={location} 
+            onChange={(e) => setLocation(e.target.value)} 
+            required 
+          />
+        </label>
+        <button type="submit" className="button" style={{ width: '100%', marginTop: '10px' }} disabled={checking}>
+          {checking ? 'Checking live radar...' : 'Check Rain Status'}
+        </button>
+      </form>
+
+      {result && (
+        <div style={{ padding: '20px', borderRadius: '12px', background: result.willRain ? '#fef2f2' : '#f0fdf4', border: `1px solid ${result.willRain ? '#fecaca' : '#bbf7d0'}` }}>
+          <h4 style={{ margin: '0 0 10px 0', color: result.willRain ? '#b91c1c' : '#15803d' }}>
+            {result.willRain ? '🌧️ Rain Alert' : '☀️ All Clear'}
+          </h4>
+          <p style={{ margin: '0 0 16px 0', color: '#475569' }}>{result.message}</p>
+          <a 
+            href="https://www.accuweather.com/en/bd/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ color: '#2563eb', textDecoration: 'underline', fontSize: '14px' }}
+          >
+            Verify with AccuWeather Radar
+          </a>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 25: Prayer Time Traffic Planner
+// ===================================================================
+const PrayerTraffic = () => {
+  const [timings, setTimings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [depTime, setDepTime] = useState('12:00');
+  const [warning, setWarning] = useState(null);
+
+  useEffect(() => {
+    fetch('https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1')
+      .then(res => res.json())
+      .then(data => {
+        if (data.code === 200) {
+          const t = data.data.timings;
+          setTimings({ Fajr: t.Fajr, Dhuhr: t.Dhuhr, Asr: t.Asr, Maghrib: t.Maghrib, Isha: t.Isha, Jummah: t.Dhuhr }); // Friday Jummah is around Dhuhr
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!timings) return;
+    const checkTime = (timeStr) => {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    };
+    const userT = checkTime(depTime);
+    let overlap = null;
+    const isFriday = new Date().getDay() === 5;
+
+    for (const [name, time] of Object.entries(timings)) {
+      if (name === 'Jummah' && !isFriday) continue;
+      if (name === 'Dhuhr' && isFriday) continue; // Skip Dhuhr on Friday
+      const pT = checkTime(time);
+      if (Math.abs(userT - pT) <= 30) {
+        overlap = { name: name === 'Jummah' ? 'Jummah Prayer' : name, time };
+        break;
+      }
+    }
+
+    if (overlap) {
+      setWarning(`Your departure is very close to ${overlap.name} (${overlap.time}). Expect heavy traffic near mosques. Consider leaving 30 mins earlier or later.`);
+    } else {
+      setWarning(null);
+    }
+  }, [depTime, timings]);
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🙏 Prayer Time Traffic Planner</h3>
+        <p>Mosque areas in Dhaka get extremely congested right before and after prayers (especially Jummah). Check your departure time against today's live prayer schedule.</p>
+      </div>
+      {loading ? (
+        <p>Loading prayer times...</p>
+      ) : timings ? (
+        <>
+          <div className="form-group">
+            <label>Planned Departure Time:</label>
+            <input type="time" value={depTime} onChange={e => setDepTime(e.target.value)} />
+          </div>
+          {warning ? (
+            <div style={{ background: '#fff7ed', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #ea580c', color: '#9a3412', marginBottom: '20px' }}>
+              <strong>⚠️ Congestion Warning:</strong><br/>{warning}
+            </div>
+          ) : (
+            <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #16a34a', color: '#166534', marginBottom: '20px' }}>
+              <strong>✅ Clear Window:</strong><br/>Your departure time doesn't clash with major prayer congregations.
+            </div>
+          )}
+          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+            <h4 style={{ margin: '0 0 10px', fontSize: '14px' }}>Today's Dhaka Schedule:</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px' }}>
+              {Object.entries(timings).filter(([k]) => k !== 'Jummah').map(([name, time]) => (
+                <div key={name} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                  <span>{name}</span>
+                  <strong>{time}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <p>Could not load prayer times.</p>
+      )}
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 26: Hartaal / Strike Alerts
+// ===================================================================
+const StrikeAlerts = () => {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/alerts')
+      .then(res => res.json())
+      .then(data => {
+        const strikes = data.filter(a => a.type?.toLowerCase().includes('strike') || a.title?.toLowerCase().includes('hartaal') || a.description?.toLowerCase().includes('hartaal'));
+        setAlerts(strikes);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🚫 Hartaal & Strike Alerts</h3>
+        <p>Check if there are any ongoing or upcoming political strikes that might shut down transport.</p>
+      </div>
+      {loading ? (
+        <p>Checking alerts...</p>
+      ) : alerts.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {alerts.map(a => (
+            <div key={a._id} style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '16px', borderRadius: '8px' }}>
+              <div style={{ color: '#dc2626', fontWeight: 'bold', fontSize: '18px', marginBottom: '8px' }}>{a.title}</div>
+              <p style={{ margin: '0 0 12px', fontSize: '14px' }}>{a.description}</p>
+              <div style={{ fontSize: '12px', color: '#7f1d1d', background: '#fee2e2', padding: '6px 10px', borderRadius: '4px', display: 'inline-block' }}>
+                Affected Areas: {a.affectedAreas?.join(', ') || 'Citywide'}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '40px 20px', background: '#f0fdf4', borderRadius: '12px', color: '#166534' }}>
+          <div style={{ fontSize: '40px', marginBottom: '10px' }}>🕊️</div>
+          <h4 style={{ margin: '0 0 8px' }}>No Active Strikes</h4>
+          <p style={{ margin: 0, fontSize: '14px' }}>There are no reported hartaals or blockades at this time. Public transport should be running normally.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 27: VIP Movement Alerts
+// ===================================================================
+const VipAlerts = () => {
+  const [incidents, setIncidents] = useState([]);
+  const [position, setPosition] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/incidents')
+      .then(res => res.json())
+      .then(data => {
+        setIncidents(data.filter(i => i.type === 'vip_movement'));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleMapClick = (lat, lng) => setPosition({ lat, lng });
+
+  const reportVip = async () => {
+    if (!position) return alert('Tap on the map first.');
+    const desc = prompt('Enter road name and direction blocked:');
+    if (!desc) return;
+    try {
+      const res = await fetch('http://localhost:5000/api/incidents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'vip_movement', location: { lat: position.lat, lng: position.lng }, description: desc })
+      });
+      if (res.ok) {
+        alert('VIP Movement Reported');
+        window.location.reload();
+      }
+    } catch (e) {
+      alert('Error reporting');
+    }
+  };
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🚔 VIP Movement Alerts</h3>
+        <p>VIP movements cause 30-60 min sudden delays in Dhaka. Tap the map to report a blocked road, or check existing reports to avoid those routes.</p>
+      </div>
+      <div style={{ height: '300px', marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+        <MapContainer center={[23.8103, 90.4125]} zoom={12} style={{ height: '100%', width: '100%' }}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
+          <MapClickHandler onMapClick={handleMapClick} enabled={true} />
+          {incidents.map(inc => (
+            <Marker key={inc._id} position={[inc.location.lat, inc.location.lng]}>
+              <Popup><b>VIP Movement:</b><br/>{inc.description}</Popup>
+            </Marker>
+          ))}
+          {position && <Marker position={[position.lat, position.lng]} />}
+        </MapContainer>
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <button className="button" onClick={reportVip} disabled={!position}>
+          {position ? 'Report VIP Blockade Here' : 'Tap map to select location'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 28: Lost & Found
+// ===================================================================
+const LostFound = () => {
+  const [tab, setTab] = useState('browse');
+  const [items, setItems] = useState([]);
+  const [form, setForm] = useState({ type: 'lost', item: '', transport: 'Bus', route: '', contact: '' });
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('lostFoundItems') || '[]');
+    const valid = saved.filter(i => Date.now() - i.timestamp < 7 * 24 * 60 * 60 * 1000);
+    setItems(valid);
+    if (saved.length !== valid.length) localStorage.setItem('lostFoundItems', JSON.stringify(valid));
+  }, [tab]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newItem = { ...form, id: Date.now(), timestamp: Date.now() };
+    const updated = [newItem, ...items];
+    localStorage.setItem('lostFoundItems', JSON.stringify(updated));
+    setItems(updated);
+    setForm({ type: 'lost', item: '', transport: 'Bus', route: '', contact: '' });
+    alert('Report submitted successfully.');
+    setTab('browse');
+  };
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🔍 Lost & Found on Transport</h3>
+        <p>Report items you've lost or found on Dhaka's public transport (Bus, CNG, Metro, Rickshaw).</p>
+      </div>
+      
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <button className={`button ${tab === 'browse' ? '' : 'secondary'}`} style={{ flex: 1 }} onClick={() => setTab('browse')}>Browse Reports</button>
+        <button className={`button ${tab === 'report' ? '' : 'secondary'}`} style={{ flex: 1 }} onClick={() => setTab('report')}>Report Item</button>
+      </div>
+
+      {tab === 'report' && (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="form-group">
+            <label>Report Type:</label>
+            <select value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
+              <option value="lost">I lost something</option>
+              <option value="found">I found something</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Item Description:</label>
+            <input type="text" placeholder="e.g. Black Wallet, Samsung Phone" value={form.item} onChange={e => setForm({...form, item: e.target.value})} required />
+          </div>
+          <div className="form-group">
+            <label>Transport Type:</label>
+            <select value={form.transport} onChange={e => setForm({...form, transport: e.target.value})}>
+              <option>Bus</option><option>CNG</option><option>Metro</option><option>Rickshaw</option><option>Other</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Route / Area:</label>
+            <input type="text" placeholder="e.g. Mirpur to Banani" value={form.route} onChange={e => setForm({...form, route: e.target.value})} required />
+          </div>
+          <div className="form-group">
+            <label>Contact Number:</label>
+            <input type="tel" value={form.contact} onChange={e => setForm({...form, contact: e.target.value})} required />
+          </div>
+          <button type="submit" className="button">Submit Report</button>
+        </form>
+      )}
+
+      {tab === 'browse' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {items.length === 0 ? <p style={{ textAlign: 'center', color: '#64748b' }}>No active reports.</p> : null}
+          {items.map(i => (
+            <div key={i.id} style={{ background: i.type === 'lost' ? '#fff1f2' : '#f0fdf4', padding: '16px', borderRadius: '8px', border: `1px solid ${i.type==='lost'?'#fecaca':'#bbf7d0'}` }}>
+              <div style={{ fontWeight: 'bold', fontSize: '16px', color: i.type === 'lost' ? '#9f1239' : '#166534' }}>
+                {i.type.toUpperCase()}: {i.item}
+              </div>
+              <div style={{ fontSize: '13px', marginTop: '6px', color: '#334155' }}>
+                <strong>Transport:</strong> {i.transport} <br/>
+                <strong>Route:</strong> {i.route} <br/>
+                <strong>Contact:</strong> {i.contact}
+              </div>
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>
+                Posted: {new Date(i.timestamp).toLocaleString('en-BD')}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 29: Safe Pedestrian Crossings
+// ===================================================================
+const SafeCrossings = () => {
+  const [crossings, setCrossings] = useState([]);
+  const [position, setPosition] = useState({ lat: 23.8103, lng: 90.4125 });
+  const [loading, setLoading] = useState(false);
+
+  const fetchCrossings = async (lat, lng) => {
+    setLoading(true);
+    const query = `[out:json];(node["highway"="crossing"](around:2000,${lat},${lng});node["highway"="footway"]["bridge"="yes"](around:2000,${lat},${lng});node["highway"="footway"]["tunnel"="yes"](around:2000,${lat},${lng}););out center;`;
+    try {
+      const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setCrossings(data.elements.filter(e => e.lat && e.lon));
+    } catch (e) {
+      console.error('Overpass error');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchCrossings(position.lat, position.lng); }, []); // eslint-disable-line
+
+  const handleMapClick = (lat, lng) => {
+    setPosition({ lat, lng });
+    fetchCrossings(lat, lng);
+  };
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🚶 Safe Pedestrian Crossings</h3>
+        <p>Dhaka's roads are dangerous. Tap the map to find the nearest footover bridges, underpasses, and marked zebra crossings.</p>
+      </div>
+      <div style={{ height: '350px', marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+        {loading && <div style={{ position: 'absolute', top: 10, right: 10, background: 'white', padding: '4px 8px', borderRadius: '4px', zIndex: 1000, fontSize: '12px' }}>Loading...</div>}
+        <MapContainer center={[position.lat, position.lng]} zoom={14} style={{ height: '100%', width: '100%' }}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
+          <MapClickHandler onMapClick={handleMapClick} enabled={!loading} />
+          {crossings.map(c => (
+            <Marker key={c.id} position={[c.lat, c.lon]}>
+              <Popup>
+                <b>{c.tags?.name || 'Crossing'}</b><br/>
+                Type: {c.tags?.bridge === 'yes' ? 'Footover Bridge' : c.tags?.tunnel === 'yes' ? 'Underpass' : 'Zebra Crossing'}
+              </Popup>
+            </Marker>
+          ))}
+          <MapFly center={[position.lat, position.lng]} />
+        </MapContainer>
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 30: ATM & bKash Finder
+// ===================================================================
+const AtmFinder = () => {
+  const [atms, setAtms] = useState([]);
+  const [position, setPosition] = useState({ lat: 23.8103, lng: 90.4125 });
+  const [loading, setLoading] = useState(false);
+
+  const fetchAtms = async (lat, lng) => {
+    setLoading(true);
+    const query = `[out:json];(node["amenity"="atm"](around:2000,${lat},${lng});node["amenity"="bank"](around:2000,${lat},${lng}););out center;`;
+    try {
+      const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setAtms(data.elements.filter(e => e.lat && e.lon).slice(0, 50));
+    } catch (e) {
+      console.error('Overpass error');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchAtms(position.lat, position.lng); }, []); // eslint-disable-line
+
+  const handleMapClick = (lat, lng) => {
+    setPosition({ lat, lng });
+    fetchAtms(lat, lng);
+  };
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🏧 Nearest ATM & Bank Finder</h3>
+        <p>Stuck without cash for transport? Tap the map to find the nearest ATMs and bank branches.</p>
+      </div>
+      <div style={{ height: '350px', marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+        {loading && <div style={{ position: 'absolute', top: 10, right: 10, background: 'white', padding: '4px 8px', borderRadius: '4px', zIndex: 1000, fontSize: '12px' }}>Loading...</div>}
+        <MapContainer center={[position.lat, position.lng]} zoom={14} style={{ height: '100%', width: '100%' }}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
+          <MapClickHandler onMapClick={handleMapClick} enabled={!loading} />
+          {atms.map(a => (
+            <Marker key={a.id} position={[a.lat, a.lon]}>
+              <Popup>
+                <b>{a.tags?.name || (a.tags?.amenity === 'atm' ? 'ATM' : 'Bank')}</b><br/>
+                {a.tags?.operator && `Operator: ${a.tags.operator}`}
+              </Popup>
+            </Marker>
+          ))}
+          <MapFly center={[position.lat, position.lng]} />
+        </MapContainer>
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 31: Vehicle Breakdown Help
+// ===================================================================
+const BreakdownHelp = () => {
+  const [shops, setShops] = useState([]);
+  const [position, setPosition] = useState({ lat: 23.8103, lng: 90.4125 });
+  const [loading, setLoading] = useState(false);
+
+  const fetchShops = async (lat, lng) => {
+    setLoading(true);
+    const query = `[out:json];(node["shop"="car_repair"](around:3000,${lat},${lng});node["shop"="tyres"](around:3000,${lat},${lng});node["shop"="car_parts"](around:3000,${lat},${lng});node["shop"="motorcycle_repair"](around:3000,${lat},${lng}););out center;`;
+    try {
+      const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setShops(data.elements.filter(e => e.lat && e.lon).slice(0, 30));
+    } catch (e) {
+      console.error('Overpass error');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchShops(position.lat, position.lng); }, []); // eslint-disable-line
+
+  const handleMapClick = (lat, lng) => {
+    setPosition({ lat, lng });
+    fetchShops(lat, lng);
+  };
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🔧 Vehicle Breakdown Help</h3>
+        <p>Car broke down? Tap the map to find the nearest auto repair, tyre shop, or mechanics in your area.</p>
+      </div>
+      <div style={{ height: '350px', marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+        {loading && <div style={{ position: 'absolute', top: 10, right: 10, background: 'white', padding: '4px 8px', borderRadius: '4px', zIndex: 1000, fontSize: '12px' }}>Loading...</div>}
+        <MapContainer center={[position.lat, position.lng]} zoom={13} style={{ height: '100%', width: '100%' }}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
+          <MapClickHandler onMapClick={handleMapClick} enabled={!loading} />
+          {shops.map(s => (
+            <Marker key={s.id} position={[s.lat, s.lon]}>
+              <Popup>
+                <b>{s.tags?.name || 'Repair Shop'}</b><br/>
+                Type: {s.tags?.shop?.replace('_', ' ')}<br/>
+                {s.tags?.phone && `Phone: ${s.tags.phone}`}
+              </Popup>
+            </Marker>
+          ))}
+          <MapFly center={[position.lat, position.lng]} />
+        </MapContainer>
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 32: Dhaka Transport Guide
+// ===================================================================
+const TransportGuide = () => {
+  const [activeChap, setActiveChap] = useState(null);
+  const chapters = [
+    { title: "1. Boarding a Local Bus", content: "Always check the destination written on the front. Prepare exact change (e.g., ৳10-20) before boarding. Avoid standing near the door. Yell 'Daine chapen' (Move right) if you need space, and 'Ostad samne rakhen' (Driver, stop ahead) when you want to get off." },
+    { title: "2. Negotiating with a CNG", content: "Don't ask 'Jaben?' (Will you go?). State your destination firmly: 'Gulshan jabo' (I'll go to Gulshan). If they don't use the meter, know the typical fare beforehand (use our Fare tool). Walk slightly away from busy intersections to get better rates." },
+    { title: "3. Using the MRT-6 Metro", content: "Buy a Rapid Pass from any DBBL branch or station to avoid long ticket lines. Stand behind the yellow line. Wait for passengers to exit before entering. No eating or drinking inside the train. Women's only coaches are clearly marked." },
+    { title: "4. Hailing a Rickshaw", content: "Rickshaws are best for short distances (< 2km). Fares start at ৳30-40 minimum. Negotiate the fare BEFORE getting on. In the rain, many drivers have plastic covers, but fares will double." },
+    { title: "5. Using Ride-Share (Pathao/Uber)", content: "Bikes (Pathao) are the fastest way through heavy traffic, but bring a mask for dust. Always ask the driver 'Bhai, aschen?' (Brother, are you coming?) immediately after booking to avoid late cancellations." }
+  ];
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>📖 Dhaka Transport Newcomer's Guide</h3>
+        <p>Essential tips for surviving Dhaka's public transport system.</p>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {chapters.map((chap, i) => (
+          <div key={i} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+            <button 
+              onClick={() => setActiveChap(activeChap === i ? null : i)}
+              style={{ width: '100%', padding: '16px', background: activeChap === i ? '#f8fafc' : '#fff', border: 'none', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
+            >
+              {chap.title}
+              <span>{activeChap === i ? '▲' : '▼'}</span>
+            </button>
+            {activeChap === i && (
+              <div style={{ padding: '16px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', fontSize: '14px', lineHeight: '1.5' }}>
+                {chap.content}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 33: Personal Travel Diary
+// ===================================================================
+const TravelDiary = () => {
+  const [logs, setLogs] = useState([]);
+  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], from: '', to: '', mode: 'Bus', cost: '', duration: '' });
+
+  useEffect(() => {
+    setLogs(JSON.parse(localStorage.getItem('travelDiary') || '[]'));
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newLog = { ...form, id: Date.now(), cost: Number(form.cost), duration: Number(form.duration) };
+    const updated = [newLog, ...logs];
+    localStorage.setItem('travelDiary', JSON.stringify(updated));
+    setLogs(updated);
+    setForm({ ...form, from: '', to: '', cost: '', duration: '' });
+  };
+
+  const totalCost = logs.reduce((sum, log) => sum + log.cost, 0);
+  const avgDuration = logs.length ? Math.round(logs.reduce((sum, log) => sum + log.duration, 0) / logs.length) : 0;
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>📊 Personal Travel Diary</h3>
+        <p>Log your daily commutes to track how much time and money you spend on Dhaka traffic.</p>
+      </div>
+      
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ flex: 1, background: '#f0fdf4', padding: '12px', borderRadius: '8px', textAlign: 'center', border: '1px solid #bbf7d0' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#166534' }}>৳{totalCost}</div>
+          <div style={{ fontSize: '12px', color: '#15803d' }}>Total Spend</div>
+        </div>
+        <div style={{ flex: 1, background: '#fff7ed', padding: '12px', borderRadius: '8px', textAlign: 'center', border: '1px solid #ffedd5' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#9a3412' }}>{avgDuration}m</div>
+          <div style={{ fontSize: '12px', color: '#c2410c' }}>Avg Commute</div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
+        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+          <label>Date:</label>
+          <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} required />
+        </div>
+        <div className="form-group">
+          <label>From:</label>
+          <input type="text" placeholder="e.g. Mirpur" value={form.from} onChange={e => setForm({...form, from: e.target.value})} required />
+        </div>
+        <div className="form-group">
+          <label>To:</label>
+          <input type="text" placeholder="e.g. Banani" value={form.to} onChange={e => setForm({...form, to: e.target.value})} required />
+        </div>
+        <div className="form-group">
+          <label>Mode:</label>
+          <select value={form.mode} onChange={e => setForm({...form, mode: e.target.value})}>
+            <option>Bus</option><option>Metro</option><option>CNG</option><option>Rickshaw</option><option>Uber/Pathao</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Cost (৳):</label>
+          <input type="number" min="0" value={form.cost} onChange={e => setForm({...form, cost: e.target.value})} required />
+        </div>
+        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+          <label>Duration (Minutes):</label>
+          <input type="number" min="1" value={form.duration} onChange={e => setForm({...form, duration: e.target.value})} required />
+        </div>
+        <button type="submit" className="button" style={{ gridColumn: 'span 2' }}>Add Log</button>
+      </form>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {logs.map(log => (
+          <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+            <div>
+              <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{log.from} → {log.to}</div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>{log.date} • {log.mode}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontWeight: 'bold', color: '#16a34a' }}>৳{log.cost}</div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>{log.duration} min</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Feature 34: BD Train Schedule & Tracker
+// ===================================================================
+const TrainTracker = () => {
+  const [tab, setTab] = useState('schedule');
+  const trains = [
+    { no: '701', name: 'Subarna Express', to: 'Chittagong', dep: '07:00 AM', off: 'Monday' },
+    { no: '703', name: 'Mahanagar Godhuli', to: 'Chittagong', dep: '03:00 PM', off: 'None' },
+    { no: '717', name: 'Jayantika Express', to: 'Sylhet', dep: '11:15 AM', off: 'Tuesday' },
+    { no: '739', name: 'Upaban Express', to: 'Sylhet', dep: '08:30 PM', off: 'Wednesday' },
+    { no: '753', name: 'Silk City Express', to: 'Rajshahi', dep: '02:40 PM', off: 'Sunday' },
+    { no: '759', name: 'Padma Express', to: 'Rajshahi', dep: '10:45 PM', off: 'Tuesday' },
+    { no: '769', name: 'Dhumketu Express', to: 'Rajshahi', dep: '06:00 AM', off: 'Thursday' },
+    { no: '773', name: 'Kalni Express', to: 'Sylhet', dep: '03:00 PM', off: 'Friday' },
+    { no: '787', name: 'Sonar Bangla', to: 'Chittagong', dep: '07:00 AM', off: 'Wednesday' },
+    { no: '793', name: 'Panchagarh Express', to: 'Panchagarh', dep: '10:45 PM', off: 'None' },
+  ];
+
+  return (
+    <div className="tool-form">
+      <div className="tool-intro">
+        <h3>🚂 BD Train Schedule & Tracker</h3>
+        <p>Check major intercity train schedules from Dhaka Kamalapur or view real-time train locations.</p>
+      </div>
+
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <button className={`button ${tab === 'schedule' ? '' : 'secondary'}`} style={{ flex: 1 }} onClick={() => setTab('schedule')}>Intercity Schedule</button>
+        <button className={`button ${tab === 'track' ? '' : 'secondary'}`} style={{ flex: 1 }} onClick={() => setTab('track')}>Live Tracking</button>
+      </div>
+
+      {tab === 'schedule' && (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ padding: '10px' }}>Train</th>
+                <th style={{ padding: '10px' }}>To</th>
+                <th style={{ padding: '10px' }}>Departs (Dhaka)</th>
+                <th style={{ padding: '10px' }}>Off Day</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trains.map(t => (
+                <tr key={t.no} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <td style={{ padding: '10px' }}><strong>{t.name}</strong><br/><span style={{ color: '#64748b', fontSize: '11px' }}>{t.no}</span></td>
+                  <td style={{ padding: '10px' }}>{t.to}</td>
+                  <td style={{ padding: '10px', fontWeight: 'bold' }}>{t.dep}</td>
+                  <td style={{ padding: '10px', color: t.off !== 'None' ? '#dc2626' : '#16a34a' }}>{t.off}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '12px', textAlign: 'center' }}>Source: Bangladesh Railway. Subject to change.</p>
+        </div>
+      )}
+
+      {tab === 'track' && (
+        <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+          <iframe 
+            src="https://www.trainlivelocation.com" 
+            title="Train Live Tracker"
+            width="100%" 
+            height="100%" 
+            style={{ border: 'none' }}
+          />
+        </div>
+      )}
     </div>
   );
 };

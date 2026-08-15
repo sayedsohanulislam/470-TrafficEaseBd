@@ -16,6 +16,7 @@ app.use('/api/signals', require('./routes/trafficSignalRoutes'));
 app.use('/api/transit', require('./routes/transitRouteRoutes'));
 app.use('/api/summary', require('./routes/summaryRoutes'));
 app.use('/api/live-traffic', require('./routes/liveTrafficRoutes'));
+app.use('/api/air-quality', require('./routes/airQualityRoutes'));
 app.use('/api/operations', require('./routes/operationRoutes'));
 
 app.get('/', (req, res) => {
