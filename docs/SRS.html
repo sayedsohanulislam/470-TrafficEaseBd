@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrafficEase BD - Software Requirements Specification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --text: #1f2937;
+      --text-muted: #4b5563;
+      --bg: #ffffff;
+      --surface: #f9fafb;
+      --line: #e5e7eb;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      font-size: 11pt;
+      padding: 2cm;
+    }
+
+    /* Print settings */
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+
+    .page-break {
+      margin-top: 3rem;
+    }
+
+    /* Cover Page */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 24cm;
+      text-align: center;
+      padding: 2cm 0;
+      page-break-after: always;
+    }
+
+    .cover-title {
+      font-size: 32pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
+    }
+
+    .cover-subtitle {
+      font-size: 16pt;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .cover-doc-type {
+      font-size: 14pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      margin-bottom: 4rem;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.5rem;
+    }
+
+    .cover-meta {
+      font-size: 10pt;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+      text-align: left;
+      width: 100%;
+      max-width: 16cm;
+      background: var(--surface);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    .cover-meta p {
+      margin-bottom: 0.5rem;
+    }
+
+    .cover-meta p strong {
+      color: #0f172a;
+    }
+
+    .cover-authors-title {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      text-align: center;
+      width: 100%;
+      max-width: 16cm;
+    }
+
+    .cover-page table {
+      width: 100%;
+      max-width: 16cm;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .cover-page th, .cover-page td {
+      border: 1px solid var(--line);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 9.5pt;
+    }
+
+    .cover-page th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Main Content Styling */
+    h1, h2, h3, h4 {
+      color: #0f172a;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: 16pt;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.4rem;
+      page-break-before: always;
+    }
+
+    h3 {
+      font-size: 13pt;
+      margin-top: 1.5rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+    }
+
+    table:not(.cover-page table) {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+
+    table:not(.cover-page table) th, table:not(.cover-page table) td {
+      border: 1px solid var(--line);
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    table:not(.cover-page table) th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    table:not(.cover-page table) tr:nth-child(even) {
+      background: #fdfdfd;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 9.5pt;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+
+    pre {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      padding: 1.2rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 2rem auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--line);
+      page-break-inside: avoid;
+    }
+
+    .image-caption {
+      text-align: center;
+      font-size: 9.5pt;
+      color: var(--text-muted);
+      margin-top: -1.5rem;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover Page -->
+  <div class="cover-page">
+    <div class="cover-title">“TrafficEase BD”</div>
+    <div class="cover-subtitle">Dhaka Smart City Traffic Command System</div>
+    <div class="cover-doc-type">Software Requirements Specification</div>
+    
+    <div class="cover-meta">
+      <p><strong>Course:</strong> CSE470 - Software Engineering</p>
+      <p><strong>Academic Semester:</strong> Summer 2026</p>
+      <p><strong>Group / Section:</strong> Group 4 / Section 01</p>
+      <p><strong>Document Version:</strong> v1.2.0 (Audit Ready)</p>
+      <p><strong>Date of Submission:</strong> July 12, 2026</p>
+    </div>
+
+    <div class="cover-authors-title">Prepared by:</div>
+    <table>
+<thead>
+<tr>
+<th align="left">Student ID</th>
+<th align="left">Student Name</th>
+<th align="left">Role / Core Contributions</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>22201631</strong></td>
+<td align="left">Md. Mushroor Muttakin Khan</td>
+<td align="left">Lead Backend Architect, Auth Security, MongoDB Schemas, &amp; Controller Logic</td>
+</tr>
+<tr>
+<td align="left"><strong>22201940</strong></td>
+<td align="left">Raisha Tasnim Khan</td>
+<td align="left">Frontend Core UI Designer, Operations Panel, Data Bindings, &amp; Alert Broadcasts</td>
+</tr>
+<tr>
+<td align="left"><strong>22341036</strong></td>
+<td align="left">Sayed Sohanul Islam</td>
+<td align="left">GIS Engineer, Google Maps Live Traffic Overlay, Geocoding Engine, &amp; Click-to-Pin System</td>
+</tr>
+<tr>
+<td align="left"><strong>23301060</strong></td>
+<td align="left">Maisha Maliha Nisa</td>
+<td align="left">Citizen Service UX, Operations Support, &amp; Session Audit Logger</td>
+</tr>
+</tbody></table>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    
+
+
+
+
+
+
+
+<h2>1. Introduction</h2>
+<h3>1.1 Type of Project</h3>
+<p>TrafficEase BD is a MERN Stack (MongoDB, Express.js, React.js, Node.js) web-based intelligent GIS-centered Urban Traffic Management and Command Platform. It simulates a Smart City Central Control Room designed specifically for the metropolitan traffic challenges of Dhaka, Bangladesh.</p>
+<h3>1.2 Purpose</h3>
+<p>The platform&#39;s primary purpose is to consolidate fragmented urban mobility telemetry (live road congestion, public transport tracking, incident logs, weather risks, parking allocations, and traffic signal control plans) into a single, cohesive, high-performance web dashboard. It enables commuters to report blocks dynamically and provides municipal authorities with a central control interface to dispatch response crews.</p>
+<h3>1.3 Target Users</h3>
+<ul>
+<li><strong>Dhaka Commuters &amp; Drivers:</strong> To check real-time road delays, find optimal transit paths, lookup parking spaces, and submit incident logs.</li>
+<li><strong>Municipal Traffic Authorities (DMP, DTCA):</strong> To monitor queue lengths, adjust signal cycles, verify user incident logs, and broadcast urgent road safety bulletins.</li>
+</ul>
+<hr>
+<h2>2. Technical Stack and Environment</h2>
+<ul>
+<li><strong>Frontend:</strong> React.js, React-Leaflet, Axios, HTML5, CSS3 (Glassmorphism layout).</li>
+<li><strong>Backend:</strong> Node.js, Express.js, JWT Token Authentication, Bcrypt.js encryption.</li>
+<li><strong>Database:</strong> MongoDB (via Mongoose ODM) with GIS GeoJSON spatial indexing (<code>2dsphere</code>).</li>
+<li><strong>Environment/OS Compatibility:</strong> Fully cross-platform. Tested on Windows 10/11, macOS, and Linux (Ubuntu 22.04 LTS). Designed to run responsively on major desktop browsers (Chrome, Safari, Firefox, Edge).</li>
+</ul>
+<hr>
+<h2>3. Architecture Overview (MVC)</h2>
+<p>The system strictly adheres to the Model-View-Controller (MVC) architecture to ensure separation of concerns, modularity, and easy testing:</p>
+<pre><code class="language-mermaid">graph TD
+    subgraph Client [View Layer - React App]
+        V1[Home View]
+        V2[Live Map View]
+        V3[Dashboard View]
+        V4[Operations Workspace]
+    end
+
+    subgraph Server [Controller Layer - Express API]
+        C1[Auth Controller]
+        C2[Incident Controller]
+        C3[Vehicle Controller]
+        C4[Alert Controller]
+        C5[LiveTraffic Controller]
+    end
+
+    subgraph Database [Model Layer - Mongoose Schemas]
+        M1[(User Schema)]
+        M2[(Incident Schema)]
+        M3[(Vehicle Schema)]
+        M4[(Alert Schema)]
+        M5[(Parking/Signal/Transit)]
+    end
+
+    Client --&gt;|HTTP / JSON Requests| Server
+    Server --&gt;|Read / Write Queries| Database
+    Database --&gt;|JSON Document Streams| Server
+    Server --&gt;|State Updates| Client
+</code></pre>
+<hr>
+<h2>4. Database Class Diagram</h2>
+<p>The relationships and database model structures representing the core entities of TrafficEase BD:</p>
+<pre><code class="language-mermaid">classDiagram
+    class User {
+        +ObjectId _id
+        +String name
+        +String email
+        +String phone
+        +String passwordHash
+        +String role
+        +Date createdAt
+    }
+
+    class Incident {
+        +ObjectId _id
+        +String title
+        +String type
+        +String severity
+        +String status
+        +String locationName
+        +Point location
+        +String description
+        +ObjectId reportedBy
+        +ObjectId assignedAuthority
+    }
+
+    class Vehicle {
+        +ObjectId _id
+        +String vehicleNumber
+        +String type
+        +Point currentLocation
+        +String status
+        +ObjectId driver
+        +Date lastUpdated
+    }
+
+    class Alert {
+        +ObjectId _id
+        +String title
+        +String message
+        +String area
+        +String severity
+        +Boolean active
+        +Date expiresAt
+    }
+
+    class ParkingLot {
+        +ObjectId _id
+        +String name
+        +String address
+        +Number capacity
+        +Number availableSpaces
+        +String status
+        +Point location
+    }
+
+    class TrafficSignal {
+        +ObjectId _id
+        +String intersection
+        +String status
+        +String congestionLevel
+        +Number cycleSeconds
+        +Point location
+    }
+
+    class TransitRoute {
+        +ObjectId _id
+        +String name
+        +String mode
+        +String origin
+        +String destination
+        +String status
+        +Number headwayMinutes
+    }
+
+    Incident &quot;many&quot; --&gt; &quot;1&quot; User : reportedBy
+    Vehicle &quot;many&quot; --&gt; &quot;1&quot; User : driver
+</code></pre>
+<hr>
+<h2>5. Functional Requirements (Core Features)</h2>
+<p>Authentication and registration are prerequisites and are not counted as features. The authoritative user-facing requirement set is the 20-item <code>docs/CITIZEN_SERVICE_TRACEABILITY.md</code>. A service is counted only when a commuter completes an action and receives an observable result or next action. The former 30-item control-room catalogue is retained in <code>docs/FEATURE_TRACEABILITY.md</code> only as supporting technical traceability.</p>
+<h3>Group A: Commuter &amp; Navigation Features (Sayed Sohanul Islam)</h3>
+<ol>
+<li><strong>Google Maps Traffic Overlay:</strong> Dynamic integration of real-time road pressure overlays showing green/orange/red lines directly in Leaflet.</li>
+<li><strong>Nominatim Address Search:</strong> Asynchronous address lookup allowing users to type any landmark in Dhaka and pan the map instantly.</li>
+<li><strong>Location Marker Dropper:</strong> Automatically drops search markers with popups at searched destinations.</li>
+<li><strong>Click-to-Pin Incident Picker:</strong> Let users select coordinate markers directly on the map instead of entering coordinates manually.</li>
+<li><strong>Distance ETA Multimodal Calculator:</strong> Compares estimated travel duration for Car, MRT, and Bus modes based on distance sliders.</li>
+<li><strong>Commuter Route Recommendation:</strong> Renders recommended bypass pathways based on origin-destination dropdown selections.</li>
+<li><strong>Weather Risk Evaluation:</strong> Simulates rain intensity changes to calculate live road safety warning scores.</li>
+<li><strong>Flood Sensor Simulator:</strong> Adjusts water accumulation levels (in inches) to issue clearance warnings for different vehicle classes.</li>
+</ol>
+<h3>Group B: Central Operations &amp; Dashboard (Raisha Tasnim Khan)</h3>
+<ol start="9">
+<li><strong>Real-time Stats Overview Grid:</strong> Dynamic tiles tracking total active incidents, alert counts, and average network speed.</li>
+<li><strong>Operations Audit Log Feeds:</strong> Live list tracking municipal actions, dispatches, and alert events.</li>
+<li><strong>Urgent Broadcast Alerts list:</strong> Displays active road closures and emergency weather bulletins.</li>
+<li><strong>Telemetry Corridor Load List:</strong> Visual bar indicators representing road delay percentages on major highways.</li>
+<li><strong>Active Patrol Fleet Monitor:</strong> Lists tracked ambulances, police units, and towing vehicles.</li>
+<li><strong>Quick dispatch action log:</strong> Renders assigned tasks and responding officers from command desks.</li>
+<li><strong>Multilingual Advisory Notice:</strong> Localized warning banners (English/Bangla support) based on air quality metrics.</li>
+</ol>
+<h3>Group C: Authority Control &amp; Dispatch (Md. Mushroor Muttakin Khan)</h3>
+<ol start="16">
+<li><strong>Incident Telemetry Submission:</strong> Allows authorities and authenticated users to file incidents directly.</li>
+<li><strong>Incident Status Modifier:</strong> Click-to-resolve or investigate reports from the central table.</li>
+<li><strong>Incident Removal Handler:</strong> Operator capability to dismiss false reports.</li>
+<li><strong>Location Focus Anchor:</strong> Click-to-locate maps linking directly to selected incident coordinate indices.</li>
+<li><strong>Municipal Alert Broadcaster:</strong> Push alerts directly into the system warning queues.</li>
+<li><strong>Central Response Squad Dispatcher:</strong> Form to select unit classes (Police, Towing, WASA pumps) and dispatch them.</li>
+<li><strong>Interactive Parking Reserve System:</strong> Real-time parking slot grid allocator. Commuters click slots to reserve/free spaces.</li>
+</ol>
+<h3>Group D: Signal &amp; Smart Transit Systems (Maisha Maliha Nisa)</h3>
+<ol start="23">
+<li><strong>Interactive Signal Light Cycles:</strong> Simulates traffic light countdowns and active phase indicators.</li>
+<li><strong>Manual Signal Override:</strong> Toggles North-South / East-West phase priorities manually.</li>
+<li><strong>Adaptive Phase Timer Calculator:</strong> Allocates optimal green-light seconds based on intersection congestion loads.</li>
+<li><strong>Signal Failure Simulator:</strong> Toggles mock intersection controllers to test warning dispatch feeds.</li>
+<li><strong>Emergency Vehicle Priority Routing:</strong> Swaps signals to Green Cascade layout when emergency vehicles approach.</li>
+<li><strong>School Zone Safe-Speed Lock:</strong> Limits speed parameters to 20 km/h in target zones.</li>
+<li><strong>Feeder Metro Connector Board:</strong> Renders subway feeder routes and arrival schedules.</li>
+<li><strong>Public Transit Capacity Estimator:</strong> Sliders to adjust passenger density and warn against transit crowding.</li>
+</ol>
+<hr>
+<h2>6. Non-Functional Requirements</h2>
+<ul>
+<li><strong>Performance:</strong> Real-time database calls are debounced (<code>600ms</code>) to minimize API load during searches. Live SVG graphs render Client-Side for instant animation response.</li>
+<li><strong>Security:</strong> All user passwords are encrypted using <code>bcryptjs</code> with salt round <code>10</code> before saving. Protected endpoints require verified JSON Web Tokens (JWT).</li>
+<li><strong>Resiliency:</strong> Authentication, incident, vehicle, alert, parking, signal, transit, summary, and operation-log controllers use in-memory demonstration fallbacks when MongoDB is unavailable.</li>
+<li><strong>Adherence to Code Ethics:</strong> No templates or external UI generation tools were used. The design leverages vanilla CSS stylesheets for maximum speed, compatibility, and a premium custom look.</li>
+</ul>
+<hr>
+<h2>7. Verification and Testing</h2>
+<p>The repository contains repeatable automated and manual verification:</p>
+<ul>
+<li><strong>Backend tests:</strong> <code>cd backend &amp;&amp; npm test</code>.</li>
+<li><strong>Frontend tests:</strong> <code>cd frontend &amp;&amp; npm test -- --watchAll=false</code>.</li>
+<li><strong>Production build:</strong> <code>cd frontend &amp;&amp; npm run build</code>.</li>
+<li><strong>Traceability:</strong> Every core feature has an ID, outcome, code path, API/model evidence, and documented lead.</li>
+</ul>
+
+  </div>
+
+  <script>
+    // Automatically inject captions under images
+    document.querySelectorAll('img').forEach(img => {
+      const captionText = img.getAttribute('alt');
+      if (captionText) {
+        const caption = document.createElement('div');
+        caption.className = 'image-caption';
+        caption.innerText = 'Figure: ' + captionText;
+        img.parentNode.insertBefore(caption, img.nextSibling);
+      }
+    });
+  </script>
+</body>
+</html>
