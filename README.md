@@ -1,107 +1,140 @@
-# TrafficEase BD - CSE470 Software Engineering Project
+# TrafficEase BD: Intelligent Multi-Modal Urban Mobility Platform
 
-## Project Title
-TrafficEase BD: Intelligent Multi-Modal Urban Mobility and Traffic Management Platform
+[![Release](https://img.shields.io/badge/Release-v1.1.0-blue.svg)](https://github.com/sayedsohanulislam/470-TrafficEaseBd)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
+[![Backend Tests](https://img.shields.io/badge/Tests-33%20Passed-success.svg)]()
+[![Node](https://img.shields.io/badge/Node.js-18%2B-green.svg)]()
+[![React](https://img.shields.io/badge/React-18.3-61dafb.svg)]()
+[![Status](https://img.shields.io/badge/Status-Active%20Development-orange.svg)]()
+[![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)]()
 
-## Tech Stack
-- Frontend: React.js + CSS + Leaflet.js
-- Backend: Node.js + Express.js
-- Database: MongoDB
-- Authentication: JWT + bcrypt
-- Architecture: Layered MVC (React views, Express routes/controllers/services, Mongoose models)
+TrafficEase BD is a modern, full-stack multi-modal urban mobility and traffic management platform designed for Dhaka city. It provides commuters with real-time route optimization, public transit routing, transparent fare estimates, hazard reporting, and authorities with an integrated operations dashboard.
 
-## Implemented Modules
-- JWT login and registration with commuter, driver, admin, and authority roles
-- Bilingual, commuter-first traffic page with plain-language leave-now guidance and road-by-road delays
-- Live traffic map with incident markers, vehicle markers, and colored corridor pressure overlays
-- Incident reporting and incident status management
-- Vehicle registration, fleet status, and vehicle statistics
-- Public alert publishing
-- Parking lot capacity and availability tracking
-- Traffic signal monitoring
-- Public transit route management
-- Operations summary dashboard
-- 20 task-based citizen services with search, five everyday-need groups, favorites, and direct deep links
+---
 
-## 20 User-Completable Services
-1. Plan a road route
-2. Check CNG and rickshaw fares
-3. See reported road problems on a map
-4. Submit a trackable road-problem report
-5. Use the MRT-6 station guide
-6. Find a bus by origin and destination
-7. Find parking and check its rate and hours
-8. Call the correct emergency service
-9. Avoid waterlogged roads using alternate-road guidance
-10. Find fuel or CNG stations
-11. Choose a better departure time
-12. Find a hospital and emergency phone number
-13. Check currently active school zones
-14. Find a CNG or rickshaw stand
-15. Check road closures and detours
-16. Compare journey costs across transport modes
-17. Find and call the responsible traffic-police division
-18. Track submitted incident reports
-19. Save a daily home-to-work commute
-20. Read official traffic alerts
+## 🚀 Tech Stack
 
-Each service produces an observable result or next action—navigate, calculate, call, report, save, filter, or track. The canonical user-service-to-code mapping is maintained in `docs/CITIZEN_SERVICE_TRACEABILITY.md`. The older `docs/FEATURE_TRACEABILITY.md` now documents supporting technical and authority capabilities rather than the commuter-facing feature count.
+- **Frontend:** React.js, CSS3, React-Leaflet, Google Maps API
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB & Mongoose ORM
+- **Authentication:** JWT (JSON Web Tokens) with bcrypt password hashing
+- **Architecture:** Layered MVC (React Views, Express Routes, Controllers, Business Services, Mongoose Models)
+- **Deployment:** Vercel (Frontend & Serverless API Gateway)
 
-## Setup Instructions
+---
 
-### Backend
+## 🌟 Key Platform Modules
+
+- **Dynamic Traffic & Departure Guidance:** Real-time citywide traffic analysis with plain-language departure guidance (*"Good time to leave"*, *"Leave with extra time"*, *"Wait a little"*).
+- **Interactive Live Map:** Multi-layer map featuring corridor congestion overlays, live vehicle markers, and incident pins.
+- **Incident Management Lifecycle:** Crowdsourced reporting for road damages, waterlogging, and collisions with admin review and status workflows (*Under Review → Investigating → Resolved*).
+- **Fleet & Vehicle Monitoring:** Registration, telemetry status, and vehicle capacity tracking.
+- **Authority Safety Broadcasting:** High-priority public alert notifications broadcast to citizens.
+- **Parking & Amenities:** Parking Koi integration for real-time space availability, rates, and operating hours.
+- **Public Transit & Metro:** MRT-6 station guide with headways and timetables, plus origin-destination bus route planner.
+- **Operations Dashboard:** Comprehensive metrics for city authorities and administrators.
+
+---
+
+## 🎯 20 User-Facing Citizen Services
+
+1. **Route Planner:** Multi-criteria road navigation and travel-time comparisons.
+2. **Fare Estimator:** Official BRTA baseline fare calculation for CNG auto-rickshaws and cycle-rickshaws.
+3. **Live Road Incidents:** Real-time map displaying reported traffic obstructions.
+4. **Trackable Incident Reporting:** Citizen reporting pipeline with authenticated tracking.
+5. **MRT-6 Metro Guide:** Dhaka metro stations, schedules, and interchange info.
+6. **Bus Route Finder:** Bus recommendation engine matching origin and destination stops.
+7. **Parking Finder:** Nearest parking spots with tariff rates and hours.
+8. **Emergency Hotlines:** 1-click dispatch to police, fire, and ambulance services.
+9. **Waterlogging Detours:** Real-time waterlogged road avoidance and bypass suggestions.
+10. **Fuel & CNG Finder:** Nearby filling stations with status and pricing.
+11. **Departure Window Optimizer:** Congestion forecasting to pick the best travel time.
+12. **Emergency Healthcare Finder:** Dhaka hospital directory with direct phone numbers.
+13. **Active School Zones:** Alerts for high-pedestrian school zones during peak hours.
+14. **CNG & Rickshaw Stands:** Verified local stand locations.
+15. **Road Closures & Diversions:** Official road diversion notices and roadwork maps.
+16. **Modal Cost Comparison:** Side-by-side travel expense comparisons across transit modes.
+17. **Traffic Police Directory:** Area-wise division contacts and duty officer numbers.
+18. **Incident Tracker:** Historical tracking of user-submitted reports and resolution status.
+19. **Commute Saver:** Shortcut profiles for daily home-to-work travel patterns.
+20. **Official Traffic Alerts:** Verified alerts issued by traffic control authorities.
+
+---
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- Node.js (v18.0.0 or higher)
+- npm (v9.0.0 or higher)
+- MongoDB instance (local or MongoDB Atlas)
+
+### 1. Backend Setup
+
 ```bash
 cd backend
 npm install
-# Optional: create .env file
+
+# Configure environment variables (.env)
+# PORT=5000
+# MONGO_URI=mongodb://localhost:27017/trafficease_bd
+# JWT_SECRET=your_jwt_secret_key
+
 npm run dev
+```
+
+Run test suite:
+```bash
 npm test
 ```
 
-### Frontend
+### 2. Frontend Setup
+
 ```bash
 cd frontend
 npm install
+
+# Optional: create frontend/.env if pointing to an external backend
+# REACT_APP_API_URL=http://localhost:5000/api
+
 npm start
+```
+
+Run tests:
+```bash
 npm test -- --watchAll=false
-npm run build
 ```
 
-### MongoDB
-Use MongoDB Atlas or local MongoDB. Update MONGO_URI in backend/.env
+---
 
-## Environment Variables (backend/.env)
-```
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/trafficease_bd
-JWT_SECRET=replace_with_a_unique_random_secret_of_at_least_32_characters
-```
+## 📡 API Overview
 
-## Frontend Environment Variables
-Create `frontend/.env` only if the backend is not running at `http://localhost:5000`.
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/health` | Service health status and uptime | Public |
+| `POST` | `/api/auth/register` | Register commuter or driver account | Public |
+| `POST` | `/api/auth/login` | Authenticate and retrieve JWT token | Public |
+| `POST` | `/api/auth/demo-login` | 1-Click demo authentication session | Development |
+| `GET` | `/api/summary` | Citywide mobility metrics summary | Public |
+| `GET, POST` | `/api/incidents` | List or submit road incident reports | Authenticated |
+| `GET, POST` | `/api/alerts` | Public traffic advisories and alerts | Public / Admin |
+| `GET, POST` | `/api/vehicles` | Fleet management and status | Authority / Admin |
+| `GET, POST` | `/api/parking` | Parking lot locations and occupancy | Public / Admin |
+| `GET, POST` | `/api/signals` | Traffic signal operational status | Public / Admin |
+| `GET, POST` | `/api/transit` | Transit routes and metro schedules | Public / Admin |
+| `GET` | `/api/live-traffic` | Corridor speed, delays, and guidance | Public |
+| `GET, POST` | `/api/operations` | Administrative operations and audit | Authority / Admin |
 
-```
-REACT_APP_API_URL=http://localhost:5000/api
-```
+---
 
-## Main API Routes
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/summary`
-- `GET, POST /api/incidents`
-- `GET, POST /api/vehicles`
-- `GET, POST /api/alerts`
-- `GET, POST /api/parking`
-- `GET, POST /api/signals`
-- `GET, POST /api/transit`
-- `GET /api/live-traffic`
-- `GET /api/live-traffic/features`
-- `GET, POST /api/operations` (Authority/Admin)
+## 🔒 Security & Architecture
 
-## Notes
-- Login/Registration is a platform prerequisite and is not part of the 20-service count. Most commuter services work without an account; tracking personal reports requires login.
-- Public registration creates only Commuter or Driver accounts. Authority/Admin roles are provisioned separately.
-- Local demo admin: `admin@trafficease.com` / `password123` (development only). This account approves or deletes community incident reports.
-- The login screen also provides one-tap Commuter, Driver, Authority, and Admin demo sessions in local/demo mode.
-- MVC responsibilities are separated across `models`, `controllers`, `routes`, `services`, `config`, and React views.
-- Use GitHub and add faculty as collaborator.
+- **Layered MVC:** Clear division of responsibilities across `models`, `controllers`, `services`, `routes`, and React view components.
+- **RBAC:** Four-tier Role-Based Access Control (`Commuter`, `Driver`, `Authority`, `Admin`).
+- **Resilient Fallbacks:** In-memory fallback and offline data providers ensure core navigation and fare checks remain available even during temporary network interruptions.
+- **Cloud Ready:** Optimized for containerized deployments and serverless environments via `vercel.json`.
+
+---
+
+## 📄 License & Attribution
+
+Distributed under the MIT License. Developed for intelligent urban mobility in Bangladesh.

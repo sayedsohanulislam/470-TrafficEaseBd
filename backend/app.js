@@ -19,8 +19,23 @@ app.use('/api/live-traffic', require('./routes/liveTrafficRoutes'));
 app.use('/api/air-quality', require('./routes/airQualityRoutes'));
 app.use('/api/operations', require('./routes/operationRoutes'));
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'trafficease-bd-api',
+    version: '1.1.0',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get('/', (req, res) => {
-  res.json({ message: 'TrafficEase BD API is running...', architecture: 'MVC' });
+  res.json({
+    message: 'TrafficEase BD API is running...',
+    version: '1.1.0',
+    status: 'online',
+    architecture: 'Layered MVC'
+  });
 });
 
 app.use((req, res) => {

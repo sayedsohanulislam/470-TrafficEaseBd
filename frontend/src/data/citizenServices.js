@@ -466,7 +466,7 @@ export const searchServices = (query, group = 'all') => {
       service.task.bn,
       service.result.en,
       service.result.bn,
-      ...service.keywords
+      ...(Array.isArray(service.keywords) ? service.keywords : [])
     ].join(' ').toLowerCase();
     return searchable.includes(normalized);
   });

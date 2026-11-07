@@ -30,11 +30,11 @@ const Footer = () => (
       </div>
 
       <div className="footer-col">
-        <h4>Project</h4>
-        <span>CSE 470 Software Engineering</span>
-        <span>BRAC University</span>
-        <Link to="/smart-hub">20 citizen services</Link>
-        <Link to="/login">Login</Link>
+        <h4>Platform</h4>
+        <span>Intelligent Urban Mobility</span>
+        <span>Dhaka, Bangladesh</span>
+        <Link to="/smart-hub">20 Citizen Services</Link>
+        <Link to="/login">Portal Login</Link>
       </div>
     </div>
 

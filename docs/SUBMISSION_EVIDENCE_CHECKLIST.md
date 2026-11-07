@@ -1,6 +1,6 @@
-# CSE470 Submission Evidence Checklist
+# TrafficEase BD - Project Quality & Deployment Checklist
 
-Use this checklist before each sprint form and before the viva. Check an item only when genuine evidence exists; do not backdate or manufacture evidence.
+Use this checklist before each release and deployment milestone. Check an item only when genuine evidence exists; do not backdate or manufacture evidence.
 
 ## Project and SRS
 
