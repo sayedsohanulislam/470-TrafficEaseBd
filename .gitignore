@@ -22,3 +22,5 @@ outputs/
 Project way info/
 *.cjs
 *.py
+
+.vercel
