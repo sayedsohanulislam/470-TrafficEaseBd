@@ -11,42 +11,46 @@
    (body, dashboard-legible) and JetBrains Mono (live data readouts).
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Surfaces */
-  --bg: #0a0c10;
-  --bg-deep: #05060a;
-  --surface: rgba(255, 255, 255, 0.035);
-  --surface-hover: rgba(255, 255, 255, 0.06);
-  --surface-soft: rgba(255, 176, 32, 0.07);
-  --surface-strong: #12151b;
+  /* Surfaces - Curzon Cinema Noir */
+  --bg: #0b0c0e;
+  --bg-deep: #060708;
+  --surface: #121317;
+  --surface-hover: #1b1d24;
+  --surface-soft: rgba(231, 42, 0, 0.08);
+  --surface-strong: #16171e;
   --line: rgba(255, 255, 255, 0.09);
-  --line-strong: rgba(255, 255, 255, 0.16);
+  --line-strong: rgba(255, 255, 255, 0.18);
 
   /* Text */
-  --text: #f4f5f7;
-  --muted: #8b93a3;
-  --muted-dim: #5c6474;
+  --text: #f5f6f8;
+  --muted: #9ea3ae;
+  --muted-dim: #606673;
 
-  /* Brand + signal colors (literal traffic-light palette) */
-  --primary: #ffb020;      /* signal amber — brand */
-  --primary-strong: #e8960f;
-  --primary-soft: rgba(255, 176, 32, 0.14);
-  --accent: #4c8dff;       /* route blue — informational */
-  --accent-soft: rgba(76, 141, 255, 0.14);
-  --danger: #f0525b;       /* signal red */
-  --danger-soft: rgba(240, 82, 91, 0.14);
-  --success: #2fbf71;      /* signal green */
+  /* Brand + Curzon Colors */
+  --primary: #e72a00;      /* Curzon iconic vermilion */
+  --primary-strong: #cf2500;
+  --primary-soft: rgba(231, 42, 0, 0.16);
+  --curzon-red: #e72a00;
+  --curzon-red-glow: rgba(231, 42, 0, 0.35);
+  --curzon-gold: #cbb26a;   /* Curzon prestige brass/gold */
+  --curzon-gold-soft: rgba(203, 178, 106, 0.14);
+  --accent: #e72a00;
+  --accent-soft: rgba(231, 42, 0, 0.14);
+  --danger: #e72a00;
+  --danger-soft: rgba(231, 42, 0, 0.14);
+  --success: #2fbf71;
   --success-soft: rgba(47, 191, 113, 0.14);
   --purple: #9b7bff;
   --blue: #4c8dff;
 
-  --radius: 16px;
-  --radius-sm: 10px;
-  --shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.65);
-  --shadow-glow: 0 0 0 1px rgba(255, 176, 32, 0.08), 0 0 32px rgba(255, 176, 32, 0.10);
-  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 24px 48px -18px rgba(0, 0, 0, 0.85);
+  --shadow-glow: 0 0 0 1px rgba(231, 42, 0, 0.18), 0 0 32px rgba(231, 42, 0, 0.12);
+  --font-display: 'Plus Jakarta Sans', 'Space Grotesk', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
 }
@@ -4361,140 +4365,758 @@ textarea.tool-input { resize: vertical; }
   .hospital-emergency-call { margin-left: 0; }
 }
 
-/* style update */
 
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
-
-/* style update */
+/* ==========================================================================
+   Curzon Cinema Design System (Curzon Edition)
+   Inspired by curzon.com:
+   - Deep cinematic theatre blacks (#0B0C0E, #121317)
+   - Signature Curzon vermilion red (#E72A00)
+   - Heritage Curzon brass/gold (#CBB26A)
+   - Monospace & Grotesk typography with refined letter-spacing
+   ========================================================================== */
+
+/* Curzon Ticker */
+.curzon-ticker-wrap {
+  display: flex;
+  align-items: center;
+  background: #060708;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 16px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+.curzon-ticker-label {
+  background: #e72a00;
+  color: #fff;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-right: 14px;
+  white-space: nowrap;
+}
+.curzon-ticker-track {
+  white-space: nowrap;
+  color: #a0a6b5;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Curzon Navbar */
+.curzon-navbar {
+  background: rgba(11, 12, 14, 0.94) !important;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.curzon-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.curzon-red-mark {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  background: #e72a00;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(231, 42, 0, 0.6);
+}
+.curzon-brand-title {
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+}
+.curzon-brand-edition {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  color: #cbb26a;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.curzon-nav-link {
+  color: #9ea3ae !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+.curzon-nav-link:hover,
+.curzon-nav-link.active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.curzon-nav-link.active {
+  border-bottom: 2px solid #e72a00 !important;
+  border-radius: 0 !important;
+}
+.curzon-report-link {
+  background: #e72a00 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.08em !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  box-shadow: 0 4px 14px rgba(231, 42, 0, 0.35);
+  transition: all 0.2s ease;
+}
+.curzon-report-link:hover {
+  background: #ff3e14 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(231, 42, 0, 0.5);
+}
+.curzon-btn-dot {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+.curzon-login-link {
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #f5f6f8 !important;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  padding: 8px 14px !important;
+}
+.curzon-login-link:hover {
+  border-color: #cbb26a !important;
+  color: #cbb26a !important;
+}
+.curzon-user-badge {
+  color: #cbb26a !important;
+  font-size: 0.75rem !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.curzon-logout-btn {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: #9ea3ae;
+  cursor: pointer;
+}
+.curzon-logout-btn:hover {
+  color: #e72a00;
+}
+
+/* Curzon Hero */
+.curzon-hero {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(231, 42, 0, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 10% 80%, rgba(203, 178, 106, 0.08) 0%, transparent 40%),
+    linear-gradient(150deg, #121317 0%, #090a0d 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8) !important;
+}
+.curzon-kicker {
+  color: #cbb26a !important;
+  letter-spacing: 0.14em !important;
+  font-size: 0.74rem !important;
+  font-weight: 800 !important;
+}
+.curzon-hero-title {
+  color: #ffffff !important;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif !important;
+  font-size: clamp(2.4rem, 6.5vw, 4.4rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 0.98 !important;
+}
+.curzon-hero-subtitle {
+  color: #cbb26a !important;
+  font-size: clamp(1.1rem, 2.2vw, 1.55rem) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  margin: 10px 0 16px !important;
+}
+.curzon-hero-desc {
+  color: #a8b0c0 !important;
+  font-size: 0.98rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Curzon Cinema Booking Bar */
+.curzon-booking-box {
+  background: #14151a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 24px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+.curzon-booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: #9ea3ae;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.curzon-booking-header small {
+  color: #cbb26a;
+}
+.curzon-route-form {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-top: 0 !important;
+}
+.curzon-route-form label > span {
+  color: #cbb26a !important;
+  letter-spacing: 0.1em;
+  font-size: 0.68rem !important;
+}
+.curzon-route-form input {
+  background: #090a0d !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 6px !important;
+  color: #fff !important;
+}
+.curzon-route-form input:focus {
+  border-color: #e72a00 !important;
+  box-shadow: 0 0 0 3px rgba(231, 42, 0, 0.2) !important;
+}
+.curzon-arrow {
+  color: #cbb26a !important;
+}
+.curzon-primary-btn {
+  background: #e72a00 !important;
+  color: #ffffff !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.82rem !important;
+  border-radius: 6px !important;
+  padding: 0 20px !important;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 18px rgba(231, 42, 0, 0.4);
+}
+.curzon-primary-btn:hover {
+  background: #ff3e14 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(231, 42, 0, 0.55);
+}
+.curzon-outline-btn {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.82rem !important;
+  border-radius: 6px !important;
+  padding: 0 20px !important;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.curzon-outline-btn:hover {
+  border-color: #cbb26a !important;
+  color: #cbb26a !important;
+}
+.curzon-quick-routes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.curzon-quick-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: #6a7180;
+}
+.curzon-route-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.curzon-route-chip:hover {
+  background: rgba(231, 42, 0, 0.12);
+  border-color: #e72a00;
+  color: #fff;
+}
+
+/* Curzon Traffic Marquee */
+.curzon-traffic-marquee {
+  background: #14151a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  padding: 22px !important;
+}
+.curzon-live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #fff;
+}
+.curzon-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #e72a00;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #e72a00;
+  animation: curzonPulse 2s infinite;
+}
+@keyframes curzonPulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+.curzon-marquee-date {
+  color: #cbb26a !important;
+  letter-spacing: 0.12em;
+  font-size: 0.65rem !important;
+}
+.curzon-marquee-score {
+  margin: 16px 0;
+}
+.curzon-marquee-score strong {
+  font-size: 3.4rem !important;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #ffffff;
+  line-height: 1;
+}
+.curzon-score-meta {
+  display: flex;
+  flex-direction: column;
+}
+.curzon-score-meta b {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+.curzon-score-meta span {
+  font-size: 0.75rem;
+  color: #9ea3ae;
+}
+.curzon-advice-box {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid #e72a00;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 16px;
+}
+.curzon-marquee-stats div small,
+.curzon-marquee-stats div span {
+  font-size: 0.66rem !important;
+  letter-spacing: 0.1em;
+  color: #6a7180 !important;
+}
+.curzon-marquee-stats div strong {
+  color: #fff !important;
+  font-size: 1.05rem !important;
+}
+.curzon-marquee-cta {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-top: 14px;
+  transition: all 0.2s ease;
+}
+.curzon-marquee-cta:hover {
+  background: #e72a00;
+  border-color: #e72a00;
+}
+
+/* Sections & Headings */
+.curzon-section {
+  margin-top: 60px;
+}
+.curzon-section-head h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: clamp(1.6rem, 3.2vw, 2.3rem) !important;
+  letter-spacing: -0.01em;
+  color: #ffffff !important;
+}
+.curzon-link-gold {
+  color: #cbb26a !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.08em !important;
+  font-weight: 800 !important;
+  transition: all 0.2s ease;
+}
+.curzon-link-gold:hover {
+  color: #e72a00 !important;
+}
+
+/* Curzon Corridor Cards (Now Showing) */
+.curzon-corridor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.curzon-corridor-card {
+  background: #131418 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  padding: 18px !important;
+  transition: all 0.2s ease !important;
+}
+.curzon-corridor-card:hover {
+  border-color: rgba(231, 42, 0, 0.4) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+.curzon-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.curzon-status-pill {
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.curzon-mini-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.curzon-corridor-area {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: #6a7180;
+  font-weight: 800;
+}
+.curzon-corridor-name {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+.curzon-corridor-metrics {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.curzon-corridor-metrics small {
+  display: block;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: #6a7180;
+}
+.curzon-corridor-metrics strong {
+  font-size: 0.95rem;
+  color: #fff;
+}
+.curzon-corridor-bar {
+  background: rgba(255, 255, 255, 0.06);
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.curzon-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* Curzon Program Grid */
+.curzon-program-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+.curzon-program-card {
+  background: #131418;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+  transition: all 0.25s ease;
+}
+.curzon-program-card:hover {
+  border-color: #e72a00;
+  background: #171820;
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(231, 42, 0, 0.16);
+}
+.curzon-program-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.curzon-badge-gold {
+  color: #cbb26a;
+  border: 1px solid rgba(203, 178, 106, 0.4);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+.curzon-tag-subtle {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: #6a7180;
+  font-weight: 700;
+}
+.curzon-program-title {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.curzon-program-desc {
+  color: #9ea3ae;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+.curzon-program-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 12px;
+  margin-top: auto;
+}
+.curzon-action-text {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+}
+.curzon-program-card:hover .curzon-action-text {
+  color: #e72a00;
+}
+.curzon-action-arrow {
+  color: #e72a00;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+.curzon-program-card:hover .curzon-action-arrow {
+  transform: translateX(4px);
+}
+
+/* Curzon Membership Banner */
+.curzon-membership-banner {
+  background:
+    radial-gradient(circle at 80% 50%, rgba(203, 178, 106, 0.12) 0%, transparent 50%),
+    linear-gradient(135deg, #17181e 0%, #0d0e12 100%);
+  border: 1px solid rgba(203, 178, 106, 0.3);
+  border-radius: 16px;
+  padding: clamp(32px, 5vw, 56px);
+  margin-top: 70px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+.curzon-membership-inner {
+  max-width: 760px;
+}
+.curzon-kicker-gold {
+  color: #cbb26a !important;
+}
+.curzon-membership-banner h2 {
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.8rem, 3.8vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 10px 0 16px;
+}
+.curzon-membership-banner p {
+  color: #cbd5e1;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  margin-bottom: 26px;
+}
+.curzon-membership-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* Curzon Footer */
+.curzon-footer {
+  background: #060708 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 60px 0 30px !important;
+  margin-top: 80px;
+}
+.curzon-footer-newsletter {
+  max-width: 1200px;
+  margin: 0 auto 50px;
+  padding: 0 24px 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.curzon-newsletter-content {
+  max-width: 550px;
+}
+.curzon-newsletter-content h3 {
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 6px 0 8px;
+}
+.curzon-newsletter-content p {
+  color: #9ea3ae;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.curzon-newsletter-form {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 440px;
+}
+.curzon-newsletter-form input {
+  flex: 1;
+  background: #121317;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+  color: #fff;
+  padding: 0 14px;
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+.curzon-newsletter-form input:focus {
+  border-color: #e72a00;
+}
+.curzon-newsletter-form button {
+  background: #e72a00;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  padding: 0 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.curzon-newsletter-form button:hover {
+  background: #ff3e14;
+}
+.curzon-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+}
+.curzon-footer-logo {
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+}
+.curzon-heritage-tag {
+  color: #cbb26a !important;
+  letter-spacing: 0.12em !important;
+  font-size: 0.65rem !important;
+  font-weight: 700;
+}
+.curzon-footer-col h4 {
+  color: #ffffff !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.14em !important;
+  font-weight: 800 !important;
+  margin-bottom: 16px;
+}
+.curzon-footer-col a {
+  color: #9ea3ae !important;
+  font-size: 0.84rem !important;
+  padding: 5px 0 !important;
+  display: block;
+}
+.curzon-footer-col a:hover {
+  color: #e72a00 !important;
+}
+.curzon-footer-bottom {
+  max-width: 1200px;
+  margin: 50px auto 0;
+  padding: 24px 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: #6a7180;
+}
+.curzon-footer-legal {
+  display: flex;
+  gap: 16px;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .curzon-hero {
+    grid-template-columns: 1fr !important;
+  }
+  .curzon-footer-inner {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+@media (max-width: 600px) {
+  .curzon-route-form {
+    grid-template-columns: 1fr !important;
+  }
+  .curzon-footer-inner {
+    grid-template-columns: 1fr !important;
+  }
+}
