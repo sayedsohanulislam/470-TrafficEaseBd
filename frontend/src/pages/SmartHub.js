@@ -111,10 +111,31 @@ const allTools = [
   { id: 30, icon: '🏧', name: 'ATM & bKash Finder', category: 'Cost', desc: 'Find cash for your transport fare immediately.' },
 ];
 
+const categoryIcons = {
+  All: '⚡',
+  Navigation: '🗺️',
+  Safety: '🚨',
+  Planning: '⏱️',
+  Cost: '💰',
+  Weather: '🌤️',
+  Transit: '🚇',
+  Personal: '👤',
+  Operations: '📢',
+  Parking: '🅿️',
+  Transport: '🚗'
+};
+
 const categoryColors = {
-  Navigation: 'var(--accent)', Cost: 'var(--success)', Safety: 'var(--danger)',
-  Transit: 'var(--purple)', Parking: 'var(--primary)', Weather: '#38bdf8',
-  Transport: '#fb923c', Planning: '#a78bfa', Personal: '#34d399', Operations: '#f43f5e'
+  Navigation: '#2563eb', // Curzon Cobalt Blue
+  Cost: '#16a34a',       // Curzon Emerald Green
+  Safety: '#dc2626',     // Curzon Signal Red
+  Transit: '#7c3aed',    // Curzon Violet
+  Parking: '#e72a00',    // Curzon Vermilion
+  Weather: '#0284c7',    // Curzon Ocean Sky
+  Transport: '#d97706',  // Curzon Amber
+  Planning: '#9333ea',   // Curzon Purple
+  Personal: '#059669',   // Curzon Teal
+  Operations: '#e11d48'  // Curzon Rose
 };
 
 const SmartHub = () => {
@@ -124,10 +145,30 @@ const SmartHub = () => {
   const queryService = citizenServices.find((service) => service.slug === requestedTool);
   const [activeTool, setActiveTool] = useState(queryService?.id || null);
   const [catFilter, setCatFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
   const panelRef = useRef(null);
 
   const cats = ['All', ...Array.from(new Set(allTools.map(t => t.category)))];
-  const filtered = catFilter === 'All' ? allTools : allTools.filter(t => t.category === catFilter);
+
+  const categoryCounts = useMemo(() => {
+    const counts = { All: allTools.length };
+    allTools.forEach(t => {
+      counts[t.category] = (counts[t.category] || 0) + 1;
+    });
+    return counts;
+  }, []);
+
+  const filtered = useMemo(() => {
+    return allTools.filter(t => {
+      const matchCat = catFilter === 'All' || t.category === catFilter;
+      const query = searchTerm.trim().toLowerCase();
+      const matchSearch = !query ||
+        t.name.toLowerCase().includes(query) ||
+        t.desc.toLowerCase().includes(query) ||
+        t.category.toLowerCase().includes(query);
+      return matchCat && matchSearch;
+    });
+  }, [catFilter, searchTerm]);
 
   const openTool = (id) => {
     setActiveTool(id);
@@ -149,51 +190,147 @@ const SmartHub = () => {
   }, [requestedTool]);
 
   return (
-    <div className="tools-page">
-      <div className="tools-page-header">
-        <div>
-          <h1>Dhaka Traffic Tools</h1>
-          <p>{allTools.length} real tools to help you navigate, plan, and stay safe in Dhaka.</p>
+    <div className="tools-page curzon-tools-page">
+      <div className="tools-page-header curzon-tools-header">
+        <div className="curzon-tools-hero-copy">
+          <div className="curzon-kicker-badge">
+            <span className="curzon-red-dot" />
+            <span>CITIZEN MOBILITY HUB · 32 REAL-TIME MODULES</span>
+          </div>
+          <h1 className="curzon-tools-title">Dhaka Transit &amp; Citizen Intelligence</h1>
+          <p className="curzon-tools-subtitle">
+            Instant road telemetry, BRTA fare auditing, MRT-6 metro schedules, waterlogging detours, and emergency lifelines curated for 22 million Dhaka commuters.
+          </p>
         </div>
-        {activeTool && (
-          <button className="button secondary" onClick={closeTool}>← Back to Tools</button>
+
+        {activeTool ? (
+          <div className="curzon-header-action">
+            <button className="curzon-back-tools-btn" onClick={closeTool} type="button">
+              <span>←</span> Back to All 32 Modules
+            </button>
+          </div>
+        ) : (
+          <div className="curzon-search-wrapper">
+            <div className="curzon-search-box">
+              <span className="curzon-search-icon" aria-hidden="true">🔍</span>
+              <input
+                type="text"
+                className="curzon-search-input"
+                placeholder="Search tools (e.g. metro, bus, CNG, hospital, flood)..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                aria-label="Search Dhaka mobility modules"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="curzon-clear-search-btn"
+                  onClick={() => setSearchTerm('')}
+                  aria-label="Clear search query"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div className="curzon-search-meta">
+              <span>Showing <strong>{filtered.length}</strong> of {allTools.length} mobility modules</span>
+            </div>
+          </div>
         )}
       </div>
 
       {!activeTool && (
         <>
-          <div className="tools-cat-filter">
+          <div className="tools-cat-filter curzon-cat-filter" role="tablist" aria-label="Tool categories">
             {cats.map(c => (
               <button
                 key={c}
-                className={`cat-chip ${catFilter === c ? 'active' : ''}`}
+                className={`cat-chip curzon-cat-chip ${catFilter === c ? 'active' : ''}`}
                 onClick={() => setCatFilter(c)}
-              >{c}</button>
-            ))}
-          </div>
-          <div className="tools-grid">
-            {filtered.map(tool => (
-              <button
-                key={tool.id}
-                className="tool-card"
-                onClick={() => openTool(tool.id)}
-                style={{ '--tool-color': categoryColors[tool.category] }}
+                type="button"
+                role="tab"
+                aria-selected={catFilter === c}
               >
-                <div className="tool-card-icon">{tool.icon}</div>
-                <div className="tool-card-body">
-                  <span className="tool-card-cat">{tool.category}</span>
-                  <strong className="tool-card-name">{tool.name}</strong>
-                  <p className="tool-card-desc">{tool.desc}</p>
-                </div>
-                <span className="tool-card-arrow">→</span>
+                <span className="curzon-chip-icon">{categoryIcons[c] || '⚡'}</span>
+                <span className="curzon-chip-label">{c}</span>
+                <span className="curzon-chip-count">{categoryCounts[c] || 0}</span>
               </button>
             ))}
           </div>
+
+          <div className="tools-grid curzon-tools-grid">
+            {filtered.map(tool => {
+              const accentColor = categoryColors[tool.category] || '#e72a00';
+              return (
+                <div
+                  key={tool.id}
+                  className="tool-card curzon-service-card"
+                  onClick={() => openTool(tool.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && openTool(tool.id)}
+                  style={{ '--card-accent': accentColor }}
+                >
+                  <div className="curzon-card-top">
+                    <div className="curzon-card-icon-frame">
+                      <span className="curzon-card-emoji">{tool.icon}</span>
+                    </div>
+                    <div className="curzon-card-tags">
+                      <span className="curzon-card-cat" style={{ color: accentColor, borderColor: `${accentColor}33` }}>
+                        <span className="curzon-cat-dot" style={{ backgroundColor: accentColor }} />
+                        {tool.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="curzon-card-content">
+                    <h3 className="tool-card-name">{tool.name}</h3>
+                    <p className="tool-card-desc">{tool.desc}</p>
+                  </div>
+
+                  <div className="curzon-card-bottom">
+                    <span className="curzon-action-pill">
+                      <span>OPEN MODULE</span>
+                      <span className="curzon-card-arrow" aria-hidden="true">→</span>
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="curzon-empty-tools">
+              <span className="curzon-empty-icon" aria-hidden="true">🔍</span>
+              <h3>No matching mobility modules found</h3>
+              <p>We couldn't find any tools matching "{searchTerm}". Try clearing your search or picking another category.</p>
+              <button
+                className="curzon-primary-btn"
+                type="button"
+                onClick={() => { setSearchTerm(''); setCatFilter('All'); }}
+              >
+                Reset Search &amp; View All 32 Tools
+              </button>
+            </div>
+          )}
         </>
       )}
 
       {activeTool && (
-        <div ref={panelRef} className="tool-panel animate-in">
+        <div ref={panelRef} className="tool-panel curzon-tool-panel animate-in">
+          <div className="curzon-panel-nav-bar">
+            <button className="curzon-back-btn" onClick={closeTool} type="button">
+              <span className="arrow" aria-hidden="true">←</span>
+              <span>Back to All 32 Modules</span>
+            </button>
+            <div className="curzon-panel-trail">
+              <span>Citizen Hub</span>
+              <span className="sep">/</span>
+              <span>{allTools.find(t => t.id === activeTool)?.category}</span>
+              <span className="sep">/</span>
+              <strong className="current">{allTools.find(t => t.id === activeTool)?.name}</strong>
+            </div>
+          </div>
           <ToolPanel
             toolId={activeTool}
             user={user}
@@ -216,15 +353,18 @@ const ToolPanel = ({ toolId, user, isAuthenticated, onClose, initialFrom = '', i
   if (!tool) return null;
 
   return (
-    <div className="tool-panel-inner">
-      <div className="tool-panel-title">
-        <span>{tool.icon}</span>
-        <div>
+    <div className="tool-panel-inner curzon-panel-inner">
+      <div className="tool-panel-title curzon-panel-header">
+        <div className="curzon-panel-title-icon-box">
+          <span>{tool.icon}</span>
+        </div>
+        <div className="curzon-panel-title-text">
+          <div className="curzon-panel-cat-badge">{tool.category.toUpperCase()} MODULE</div>
           <h2>{tool.name}</h2>
           <p>{tool.desc}</p>
         </div>
       </div>
-      <div className="tool-panel-content">
+      <div className="tool-panel-content curzon-panel-content">
         {toolId === 1 && <RoutePlanner initialFrom={initialFrom} initialTo={initialTo} />}
         {toolId === 2 && <CNGFareCalc />}
         {toolId === 3 && <LiveIncidentMap />}
